@@ -1,0 +1,28 @@
+# HiveMind — Fichiers à ne pas versionner
+
+# Base de données consolidée (générée localement, jamais sync)
+*.db
+memory/consolidated.db
+prototype/memory/consolidated.db
+prototype/test_clusters/
+
+# Clés API — JAMAIS dans Git
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Fichiers temporaires
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Fichiers de test générés
+/tmp/
+test_clusters/
+
+# Fichiers lock SQLite
+*.lock

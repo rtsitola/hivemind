@@ -1,0 +1,1 @@
+{"op": "remember", "id": "evt-d78c8749", "agent": "bob", "ts": "2026-05-26T22:14:14Z", "payload": {"content": "Test watcher 3 : mémoire de Bob", "importance": 0.8, "source": "hivemind", "scope": "shared", "veracity": "unknown"}}
