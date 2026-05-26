@@ -50,7 +50,7 @@ from datetime import datetime
 
 # ── Paths ───────────────────────────────────────────────────────────
 
-HERMES_HOME = Path(os.path.expanduser("~/.hermes"))
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", os.path.expanduser("~/.hermes")))
 PROFILES_DIR = HERMES_HOME / "profiles"
 PROTOTYPE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
