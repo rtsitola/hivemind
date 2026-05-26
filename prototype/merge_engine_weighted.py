@@ -243,6 +243,7 @@ def weighted_merge(
 
     # Délègue au merge engine standard — directement en mémoire
     result = merge_events(events=events, db_path=db_path)
+    return result
 
 
 # ── CLI ─────────────────────────────────────────────────────────────
