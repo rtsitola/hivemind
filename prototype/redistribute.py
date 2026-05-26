@@ -41,7 +41,6 @@ import os
 import sys
 import argparse
 import sqlite3
-import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -52,12 +51,15 @@ from merge_engine_weighted import load_config
 
 # ── Helpers ────────────────────────────────────────────────────────
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# Imported from hivemind_common
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # already exists but just in case
+from hivemind_common import now_iso, memory_hash
 
+def _now_iso():
+    return now_iso()
 
-def _content_hash(content: str) -> str:
-    return hashlib.sha256(content.encode()).hexdigest()[:16]
+def _content_hash(content):
+    return memory_hash(content)
 
 
 # ── State ──────────────────────────────────────────────────────────
@@ -92,29 +94,59 @@ class RedistributeState:
 
 # ── Relevance ──────────────────────────────────────────────────────
 
+def _build_expertise_index(config: dict) -> dict:
+    """Construit un index inversé: domaine → [clusters qui l'ont]."""
+    index = {}
+    for cluster_name, cfg in config.get("clusters", {}).items():
+        for domain in cfg.get("expertise", []):
+            d = domain.lower()
+            if d not in index:
+                index[d] = []
+            index[d].append(cluster_name)
+    return index
+
+
 def is_relevant_to_cluster(
     content: str,
     cluster_name: str,
     config: dict,
+    _expertise_index: dict = None,
 ) -> bool:
     """
     Vérifie si un contenu est pertinent pour un cluster donné,
     basé sur ses domaines d'expertise.
+
+    Optimisation : utilise un index inversé pré-calculé.
     """
-    clusters = config.get("clusters", {})
-    cluster_cfg = clusters.get(cluster_name, {})
+    if _expertise_index is None:
+        _expertise_index = _build_expertise_index(config)
 
-    if not cluster_cfg:
-        return False
-
-    expertise = cluster_cfg.get("expertise", [])
     content_lower = content.lower()
 
-    for domain in expertise:
-        if domain.lower() in content_lower:
+    for domain, clusters in _expertise_index.items():
+        if domain in content_lower and cluster_name in clusters:
             return True
 
     return False
+
+
+def find_relevant_clusters(
+    content: str,
+    config: dict,
+    _expertise_index: dict = None,
+) -> set:
+    """Trouve tous les clusters pertinents pour un contenu."""
+    if _expertise_index is None:
+        _expertise_index = _build_expertise_index(config)
+
+    content_lower = content.lower()
+    relevant = set()
+
+    for domain, clusters in _expertise_index.items():
+        if domain in content_lower:
+            relevant.update(clusters)
+
+    return relevant
 
 
 # ── Redistribute ────────────────────────────────────────────────────
@@ -156,6 +188,9 @@ def redistribute(
     if not clusters:
         return {"error": "no_clusters_configured", "sent": 0}
 
+    # Pré-calculer l'index inversé une seule fois
+    expertise_index = _build_expertise_index(config)
+
     state_path = downstream_dir / ".redistribute_state.json"
     state = RedistributeState(str(state_path))
 
@@ -191,10 +226,8 @@ def redistribute(
         if scope == "global":
             targets.update(clusters.keys())
 
-        # Règle 2 : Pertinence par expertise
-        for cluster_name in clusters:
-            if is_relevant_to_cluster(content, cluster_name, config):
-                targets.add(cluster_name)
+        # Règle 2 : Pertinence par expertise (index inversé)
+        targets.update(find_relevant_clusters(content, config, expertise_index))
 
         # Si aucun cluster ciblé → on skip
         if not targets:

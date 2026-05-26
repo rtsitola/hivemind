@@ -43,7 +43,7 @@ import uuid
 import sqlite3
 import argparse
 import subprocess
-from datetime import datetime, timezone
+# datetime via hivemind_common
 from pathlib import Path
 from typing import Optional
 
@@ -57,12 +57,15 @@ DEFAULT_CONSOLIDATED_DB = "./memory/consolidated.db"
 
 # ── Helpers ────────────────────────────────────────────────────────
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# Imported from hivemind_common
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hivemind_common import now_iso, event_id
 
+def _now_iso():
+    return now_iso()
 
-def _event_id() -> str:
-    return f"evt-{uuid.uuid4().hex[:8]}"
+def _event_id():
+    return event_id()
 
 
 # ── Core Class ─────────────────────────────────────────────────────
@@ -312,18 +315,18 @@ class HiveMindMemory:
     def merge(self) -> dict:
         """
         Lance le merge engine pour reconstruire consolidated.db.
+        Utilise l'import direct (pas de subprocess).
         """
-        cmd = [
-            sys.executable,
-            self.merge_engine,
-            "--events-dir", str(self.events_dir),
-            "--db", str(self.consolidated_db),
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"[MERGE ERROR] {result.stderr}", file=sys.stderr)
-            return {"error": result.stderr}
-        return {"ok": True, "output": result.stdout}
+        try:
+            from merge_engine import merge_events, parse_events
+            events = parse_events(str(self.events_dir))
+            if not events:
+                return {"ok": True, "output": "No events to merge"}
+            stats = merge_events(events=events, db_path=str(self.consolidated_db))
+            return {"ok": True, "output": f"Merged {stats.get('merged',0)}, updated {stats.get('updated',0)}, skipped {stats.get('skipped',0)}"}
+        except Exception as e:
+            print(f"[MERGE ERROR] {e}", file=sys.stderr)
+            return {"error": str(e)}
 
     # ── Bootstrap ──────────────────────────────────────────────
 

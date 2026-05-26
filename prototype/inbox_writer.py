@@ -50,20 +50,23 @@ USAGE (module) :
 import json
 import os
 import sys
-import uuid
+import sys
 import argparse
-from datetime import datetime, timezone
+# datetime via hivemind_common
 from pathlib import Path
 
 
 # ── Helpers ────────────────────────────────────────────────────────
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# Imported from hivemind_common
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hivemind_common import now_iso, event_id
 
+def _now_iso():
+    return now_iso()
 
-def _msg_id() -> str:
-    return f"msg-{uuid.uuid4().hex[:8]}"
+def _msg_id():
+    return event_id("msg")
 
 
 # ── Send ────────────────────────────────────────────────────────────

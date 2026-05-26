@@ -48,7 +48,6 @@ import os
 import sys
 import sqlite3
 import argparse
-import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -56,13 +55,15 @@ from typing import Optional
 
 # ── Helpers ────────────────────────────────────────────────────────
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# Helpers from hivemind_common
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hivemind_common import now_iso, memory_hash
 
+def _now_iso():
+    return now_iso()
 
-def _content_hash(content: str) -> str:
-    """Hash du contenu pour détecter les changements."""
-    return hashlib.sha256(content.encode()).hexdigest()[:16]
+def _content_hash(content):
+    return memory_hash(content)
 
 
 # ── Export state ────────────────────────────────────────────────────

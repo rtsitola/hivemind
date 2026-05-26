@@ -62,6 +62,27 @@ CREATE TABLE IF NOT EXISTS processed_events (
 CREATE INDEX IF NOT EXISTS idx_memories_scope ON memories(scope);
 CREATE INDEX IF NOT EXISTS idx_memories_updated ON memories(updated_at);
 CREATE INDEX IF NOT EXISTS idx_memories_agent ON memories(agent);
+
+-- FTS5 pour recherche texte rapide
+CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
+    content,
+    content=memories,
+    content_rowid=rowid
+);
+
+-- Triggers pour maintenir le FTS5 sync
+CREATE TRIGGER IF NOT EXISTS memories_ai AFTER INSERT ON memories BEGIN
+    INSERT INTO memories_fts(rowid, content) VALUES (new.rowid, new.content);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_ad AFTER DELETE ON memories BEGIN
+    INSERT INTO memories_fts(memories_fts, rowid, content) VALUES ('delete', old.rowid, old.content);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_au AFTER UPDATE ON memories BEGIN
+    INSERT INTO memories_fts(memories_fts, rowid, content) VALUES ('delete', old.rowid, old.content);
+    INSERT INTO memories_fts(rowid, content) VALUES (new.rowid, new.content);
+END;
 """
 
 
@@ -162,7 +183,9 @@ def merge_events(
     stats = {"events_loaded": len(events), "merged": 0, "updated": 0,
              "deleted": 0, "skipped": 0, "errors": 0}
 
-    processed_ids = set()
+    # Précharger tous les event_ids déjà traités (1 requête au lieu de N)
+    existing = conn.execute("SELECT event_id FROM processed_events").fetchall()
+    processed_ids = {row[0] for row in existing}
     to_process = []
 
     for event in events:
@@ -171,12 +194,8 @@ def merge_events(
             stats["errors"] += 1
             continue
 
-        # Idempotence : ne pas rejouer un événement déjà traité
-        already_processed = conn.execute(
-            "SELECT 1 FROM processed_events WHERE event_id = ?", (eid,)
-        ).fetchone()
-
-        if already_processed:
+        # Idempotence : déjà dans le set préchargé
+        if eid in processed_ids:
             stats["skipped"] += 1
             continue
 
@@ -373,6 +392,8 @@ def _show_stats(db_path: str):
 
     conn.close()
 
+
+show_stats = _show_stats  # Public alias
 
 if __name__ == "__main__":
     main()

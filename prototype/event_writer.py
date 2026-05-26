@@ -12,17 +12,14 @@ Usage:
 
 import json
 import os
-import uuid
 import argparse
-from datetime import datetime, timezone
+# datetime now imported via hivemind_common
 
 
-def generate_event_id() -> str:
-    return f"evt-{uuid.uuid4().hex[:8]}"
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# Imported from hivemind_common below
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hivemind_common import now_iso, event_id
 
 
 def write_event(events_dir: str, agent: str, event: dict):
@@ -40,7 +37,7 @@ def write_event(events_dir: str, agent: str, event: dict):
 def cmd_remember(args):
     event = {
         "op": "remember",
-        "id": generate_event_id(),
+        "id": event_id(),
         "agent": args.agent,
         "ts": now_iso(),
         "payload": {
@@ -56,7 +53,7 @@ def cmd_remember(args):
 def cmd_update(args):
     event = {
         "op": "update",
-        "id": generate_event_id(),
+        "id": event_id(),
         "agent": args.agent,
         "ts": now_iso(),
         "payload": {
@@ -78,7 +75,7 @@ def cmd_update(args):
 def cmd_forget(args):
     event = {
         "op": "forget",
-        "id": generate_event_id(),
+        "id": event_id(),
         "agent": args.agent,
         "ts": now_iso(),
         "payload": {

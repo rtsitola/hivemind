@@ -29,7 +29,6 @@ import sys
 import time
 import signal
 import argparse
-import subprocess
 import fcntl
 from pathlib import Path
 from datetime import datetime
@@ -97,33 +96,17 @@ class Snapshot:
 
 def run_merge(events_dir: str, db_path: str) -> bool:
     """
-    Lance le merge engine.
+    Lance le merge engine directement (import, pas subprocess).
     Returns True si succès.
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    merge_script = os.path.join(script_dir, "merge_engine.py")
-
-    if not os.path.exists(merge_script):
-        log(f"⚠️  Merge engine introuvable: {merge_script}")
-        return False
-
     try:
-        result = subprocess.run(
-            [sys.executable, merge_script, "--events-dir", events_dir, "--db", db_path],
-            capture_output=True, text=True, timeout=30,
-        )
-        if result.returncode == 0:
-            # Extraire le résumé
-            for line in result.stdout.splitlines():
-                if "Merge terminé" in line or "Événements" in line or "mémoires" in line:
-                    log(f"   {line.strip()}")
-            return True
-        else:
-            log(f"⚠️  Merge failed: {result.stderr[:200]}")
+        from merge_engine import merge
+        stats = merge(events_dir=events_dir, db_path=db_path)
+        if "locked" in stats and stats["locked"]:
+            log("   Merge skipped (another merge in progress)")
             return False
-    except subprocess.TimeoutExpired:
-        log("⚠️  Merge timeout")
-        return False
+        log(f"   ✅ Merge terminé — {stats.get('merged',0)} merged, {stats.get('updated',0)} updated, {stats.get('skipped',0)} skipped")
+        return True
     except Exception as e:
         log(f"⚠️  Merge error: {e}")
         return False

@@ -276,8 +276,8 @@ def main():
     args = parser.parse_args()
 
     if args.stats:
-        from merge_engine import _show_stats
-        _show_stats(args.db)
+        from merge_engine import show_stats
+        show_stats(args.db)
         return
 
     result = weighted_merge(
