@@ -1,0 +1,18 @@
+{
+  "clusters": {
+    "audit": {
+      "weight": 1.0,
+      "expertise": ["audit", "IFRS", "ISA", "fraude", "circularisation", "matérialité", "provisions"]
+    },
+    "fiscal": {
+      "weight": 1.5,
+      "expertise": ["fiscalité", "TVA", "prix de transfert", "imposition", "CGI", "taxe"]
+    },
+    "juridique": {
+      "weight": 2.0,
+      "expertise": ["droit", "contrat", "contentieux", "recours", "sociétés", "litige"]
+    }
+  },
+  "expertise_multiplier": 2.0,
+  "monopoly_multiplier": 3.0
+}
