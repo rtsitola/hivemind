@@ -104,6 +104,9 @@ memory/consolidated.db
 memory/events/
 *.swp
 .DS_Store
+
+# Syncthing
+.stfolder/
 """
 
 ENV_EXAMPLE = """# Clés API — NE PAS COMMIT, NE PAS SYNCTHING
@@ -112,6 +115,17 @@ ENV_EXAMPLE = """# Clés API — NE PAS COMMIT, NE PAS SYNCTHING
 # OPENAI_API_KEY=sk-...
 # ANTHROPIC_API_KEY=sk-ant-...
 # DEEPSEEK_API_KEY=sk-...
+"""
+
+STIGNORE_TEMPLATE = """# HiveMind .stignore
+# consolidated.db est LOCAL — reconstruit par le Merge Engine sur chaque machine.
+# Ne JAMAIS le syncer via Syncthing (corruption SQLite garantie).
+consolidated.db
+consolidated.db-wal
+consolidated.db-shm
+consolidated.db.lock
+consolidated.db.watcher.lock
+*.db-journal
 """
 
 
@@ -138,6 +152,11 @@ def cmd_init(org: str, git_remote: str = None):
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
         print(f"   ✅ {d.relative_to(HERMES_HOME)}")
+
+    # ── .stignore pour Syncthing ──────────────────────────────
+    stignore_path = profile_dir / "memory" / ".stignore"
+    stignore_path.write_text(STIGNORE_TEMPLATE.lstrip())
+    print(f"   ✅ memory/.stignore (exclut consolidated.db du sync)")
 
     # ── Fichiers ──────────────────────────────────────────────
     files = {
