@@ -55,7 +55,7 @@ from typing import Optional
 
 # Importer le merge engine standard
 # Import from hivemind-core (Phase 1)
-_core_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hivemind-core")
+_core_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "core")
 if os.path.exists(_core_dir):
     sys.path.insert(0, _core_dir)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

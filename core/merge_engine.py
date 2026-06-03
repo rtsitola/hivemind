@@ -62,10 +62,49 @@ CREATE TABLE IF NOT EXISTS processed_events (
 CREATE INDEX IF NOT EXISTS idx_memories_scope ON memories(scope);
 CREATE INDEX IF NOT EXISTS idx_memories_updated ON memories(updated_at);
 CREATE INDEX IF NOT EXISTS idx_memories_agent ON memories(agent);
+
+-- FTS5 pour recherche full-text
+CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
+    content,
+    source,
+    scope,
+    agent,
+    content='memories',
+    content_rowid='rowid'
+);
+
+-- Triggers pour maintenir l'index FTS5 à jour
+CREATE TRIGGER IF NOT EXISTS memories_ai AFTER INSERT ON memories BEGIN
+    INSERT INTO memories_fts(rowid, content, source, scope, agent)
+    VALUES (new.rowid, new.content, new.source, new.scope, new.agent);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_ad AFTER DELETE ON memories BEGIN
+    INSERT INTO memories_fts(memories_fts, rowid, content, source, scope, agent)
+    VALUES ('delete', old.rowid, old.content, old.source, old.scope, old.agent);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memories_au AFTER UPDATE ON memories BEGIN
+    INSERT INTO memories_fts(memories_fts, rowid, content, source, scope, agent)
+    VALUES ('delete', old.rowid, old.content, old.source, old.scope, old.agent);
+    INSERT INTO memories_fts(rowid, content, source, scope, agent)
+    VALUES (new.rowid, new.content, new.source, new.scope, new.agent);
+END;
 """
 
 
 # ── Event parsing ──────────────────────────────────────────────────
+
+def _dedup_conflict_files(files: list[str]) -> list[str]:
+    """If both `agent.jsonl` and `agent.sync-conflict-xxx.jsonl` exist,
+    keep only the conflict file (newer data)."""
+    base_map = {}
+    for f in files:
+        basename = os.path.basename(f)
+        base = basename.replace(".sync-conflict-", "\x00").split("\x00")[0]
+        base = os.path.splitext(base)[0]
+        base_map[base] = f  # last wins (sorted = conflict files come after)
+    return sorted(base_map.values())
 
 def parse_events(events_dir: str) -> list[dict]:
     """
@@ -73,8 +112,11 @@ def parse_events(events_dir: str) -> list[dict]:
     Retourne une liste d'événements triés chronologiquement.
     Ignore les lignes vides et les lignes mal formées.
     """
-    pattern = os.path.join(events_dir, "*.jsonl")
+    # Match *.jsonl AND Syncthing conflict files (*.sync-conflict-*.jsonl)
+    pattern = os.path.join(events_dir, "*.jsonl*")
     files = sorted(glob.glob(pattern))
+    # Deduplicate: if conflict file exists, prefer it over original (more recent data)
+    files = _dedup_conflict_files(files)
 
     if not files:
         print(f"[WARN] Aucun fichier .jsonl trouvé dans {events_dir}")
@@ -84,7 +126,10 @@ def parse_events(events_dir: str) -> list[dict]:
     errors = 0
 
     for filepath in files:
-        agent = os.path.splitext(os.path.basename(filepath))[0]
+        # Extract agent name, stripping .sync-conflict-* suffix
+        basename = os.path.basename(filepath)
+        agent_raw = basename.replace(".sync-conflict-", "\x00").split("\x00")[0]
+        agent = os.path.splitext(agent_raw)[0]
         with open(filepath, "r", encoding="utf-8") as f:
             for line_no, line in enumerate(f, 1):
                 line = line.strip()
@@ -146,6 +191,12 @@ def merge_events(
 
     conn = sqlite3.connect(db_path)
     conn.executescript(SCHEMA)
+
+    # Rebuild FTS index pour données existantes (idempotent)
+    try:
+        conn.execute("INSERT INTO memories_fts(memories_fts) VALUES('rebuild')")
+    except sqlite3.OperationalError:
+        pass  # FTS table pas encore créée (premier run)
 
     # Verrouiller pour éviter merge concurrent sur la même DB
     lock_path = db_path + ".lock"
@@ -321,11 +372,34 @@ def main():
         action="store_true",
         help="Affiche les stats de la DB sans merger",
     )
+    parser.add_argument(
+        "--verify-chains",
+        action="store_true",
+        help="Vérifie l'intégrité des hash chains avant le merge",
+    )
     args = parser.parse_args()
 
     if args.stats:
         _show_stats(args.db)
         return
+
+    if args.verify_chains:
+        try:
+            from hivemind_chain import verify_all_chains
+            results = verify_all_chains(args.events_dir)
+            if not results:
+                print("\n✅ Toutes les chaînes sont valides")
+            else:
+                print(f"\n❌ {sum(len(v) for v in results.values())} erreur(s) détectée(s) :")
+                for agent, errs in results.items():
+                    for e in errs[:5]:
+                        print(f"   • {agent}: {e}")
+                print("\n⚠️  Merge annulé — corrigez les chaînes avec --verify-chains")
+                return
+        except ImportError:
+            print("[WARN] cryptography non installé — vérification ignorée")
+        except Exception as e:
+            print(f"[WARN] Erreur de vérification: {e}")
 
     stats = merge(
         events_dir=args.events_dir,

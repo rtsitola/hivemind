@@ -1,7 +1,7 @@
 # HiveMind — Phase 1 : Un esprit, un groupe
 
-> **Statut** : Spécification conceptuelle  
-> **Date** : 2026-05-26  
+> **Statut** : Finalisé ✅
+> **Date** : 2026-05-26 (finalisé 2026-05-31)
 > **Auteur** : Tsitola + Hermes
 
 ---

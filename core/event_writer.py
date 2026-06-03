@@ -26,15 +26,24 @@ def now_iso() -> str:
 
 
 def write_event(events_dir: str, agent: str, event: dict):
-    """Ajoute un événement au journal de l'agent."""
+    """Ajoute un événement au journal de l'agent, signé si possible."""
     filepath = os.path.join(events_dir, f"{agent}.jsonl")
     os.makedirs(events_dir, exist_ok=True)
+
+    # Signer avec hash chain si dispo
+    try:
+        from hivemind_chain import ChainState
+        state = ChainState(agent=agent, events_dir=events_dir)
+        event = state.sign_event(event)
+    except Exception:
+        pass  # cryptography pas installé — événement non signé
 
     with open(filepath, "a", encoding="utf-8") as f:
         f.write(json.dumps(event, ensure_ascii=False) + "\n")
 
     print(f"✅ Écrit dans {filepath}")
-    print(f"   {json.dumps(event, indent=2, ensure_ascii=False)}")
+    signed = " (signé)" if "signature" in event else ""
+    print(f"   {json.dumps(event, indent=2, ensure_ascii=False)}{signed}")
 
 
 def cmd_remember(args):

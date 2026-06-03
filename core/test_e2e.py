@@ -38,6 +38,7 @@ def cleanup():
 
 
 def test_scenario():
+    cleanup()  # Nettoie les données de test précédentes avant chaque run
     print("=" * 60)
     print("  TEST HIVEMIND MERGE ENGINE")
     print("=" * 60)

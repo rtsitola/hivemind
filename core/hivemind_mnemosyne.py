@@ -92,6 +92,13 @@ class HiveMindMemory:
         self.agent = agent
         self.merge_engine = merge_engine or self._find_merge_engine()
 
+        # Hash chain + signatures
+        try:
+            from hivemind_chain import ChainState
+            self.chain_state = ChainState(agent=agent, events_dir=str(events_dir))
+        except Exception:
+            self.chain_state = None  # cryptography pas installé
+
         # Créer le dossier events si nécessaire
         self.events_dir.mkdir(parents=True, exist_ok=True)
 
@@ -184,9 +191,18 @@ class HiveMindMemory:
         return event["id"]
 
     def _append_event(self, event: dict):
-        """Ajoute un événement au journal de l'agent (append-only)."""
+        """Ajoute un événement au journal de l'agent (append-only), signé si possible."""
+        # Signer avec la hash chain si dispo
+        if self.chain_state:
+            event = self.chain_state.sign_event(event)
+
         with open(self._event_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+        # Mettre à jour le prev_hash pour le prochain événement
+        if self.chain_state:
+            from hivemind_chain import _event_hash
+            self.chain_state._prev_hash = _event_hash(event)
 
     # ── Read operations ────────────────────────────────────────
 
@@ -212,9 +228,11 @@ class HiveMindMemory:
         try:
             # Essayer FTS5 d'abord
             rows = conn.execute(
-                "SELECT id, content, importance, source, scope, agent, created_at "
-                "FROM memories WHERE content MATCH ? "
-                "ORDER BY importance DESC LIMIT ?",
+                "SELECT m.id, m.content, m.importance, m.source, m.scope, m.agent, m.created_at "
+                "FROM memories m "
+                "JOIN memories_fts fts ON m.rowid = fts.rowid "
+                "WHERE memories_fts MATCH ? "
+                "ORDER BY m.importance DESC LIMIT ?",
                 (query, limit),
             ).fetchall()
 

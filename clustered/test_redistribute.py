@@ -20,7 +20,7 @@ import sqlite3
 
 PROTOTYPE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Import from hivemind-core (Phase 1)
-_core_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hivemind-core")
+_core_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "core")
 if os.path.exists(_core_dir):
     sys.path.insert(0, _core_dir)
 sys.path.insert(0, PROTOTYPE_DIR)

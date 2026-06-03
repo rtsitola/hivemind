@@ -30,10 +30,12 @@ from hivemind_mnemosyne import HiveMindMemory
 
 
 def cleanup():
-    for f in glob.glob(os.path.join(EVENTS_DIR, "*.jsonl")):
+    for f in glob.glob(os.path.join(EVENTS_DIR, "*.jsonl*")):
         os.remove(f)
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    for suffix in ["", "-wal", "-shm", ".lock", ".watcher.lock"]:
+        lock_path = DB_PATH + suffix
+        if os.path.exists(lock_path):
+            os.remove(lock_path)
     print("🧹 Nettoyage\n")
 
 
