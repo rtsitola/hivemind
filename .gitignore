@@ -3,8 +3,9 @@
 # Base de données consolidée (générée localement, jamais sync)
 *.db
 memory/consolidated.db
-prototype/memory/consolidated.db
-prototype/test_clusters/
+
+# Prototype — supprimé, ne plus tracker
+prototype/
 
 # Clés API — JAMAIS dans Git
 .env
