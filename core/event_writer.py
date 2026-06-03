@@ -12,17 +12,10 @@ Usage:
 
 import json
 import os
-import uuid
 import argparse
-from datetime import datetime, timezone
 
-
-def generate_event_id() -> str:
-    return f"evt-{uuid.uuid4().hex[:8]}"
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+# DRY : import shared helpers
+from hivemind_common import now_iso, event_id as generate_event_id
 
 
 def write_event(events_dir: str, agent: str, event: dict):

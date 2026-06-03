@@ -54,15 +54,8 @@ DEFAULT_MNEMOSYNE_DB = os.path.expanduser("~/.hermes/mnemosyne/data/mnemosyne.db
 DEFAULT_EVENTS_DIR = "./memory/events"
 DEFAULT_CONSOLIDATED_DB = "./memory/consolidated.db"
 
-
-# ── Helpers ────────────────────────────────────────────────────────
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def _event_id() -> str:
-    return f"evt-{uuid.uuid4().hex[:8]}"
+# DRY : import shared helpers (aliased for backward compatibility)
+from hivemind_common import now_iso as _now_iso, event_id as _event_id
 
 
 # ── Core Class ─────────────────────────────────────────────────────
