@@ -1,5 +1,7 @@
 # HiveMind — Phase 1 : Intelligence Collective
 
+<img width="1168" height="784" alt="HiveMind Architecture" src="../hivemind-architecture.svg" />
+
 > Un Hermes partagé par un groupe. Pas un assistant individuel — une intelligence collective.
 
 ## Architecture

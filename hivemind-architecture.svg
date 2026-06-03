@@ -1,0 +1,171 @@
+<svg viewBox="0 0 1168 784" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowCyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrowEmerald" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <rect width="1168" height="784" fill="url(#bg)"/>
+  
+  <g opacity="0.04">
+    <line x1="0" y1="40" x2="1168" y2="40" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="80" x2="1168" y2="80" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="120" x2="1168" y2="120" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="160" x2="1168" y2="160" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="200" x2="1168" y2="200" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="240" x2="1168" y2="240" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="280" x2="1168" y2="280" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="320" x2="1168" y2="320" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="360" x2="1168" y2="360" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="400" x2="1168" y2="400" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="440" x2="1168" y2="440" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="480" x2="1168" y2="480" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="520" x2="1168" y2="520" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="560" x2="1168" y2="560" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="600" x2="1168" y2="600" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="640" x2="1168" y2="640" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="680" x2="1168" y2="680" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="720" x2="1168" y2="720" stroke="#fff" stroke-width="0.5"/>
+    <line x1="0" y1="760" x2="1168" y2="760" stroke="#fff" stroke-width="0.5"/>
+  </g>
+
+  <text x="584" y="68" text-anchor="middle" fill="white" font-size="34" font-weight="700" font-family="system-ui, sans-serif">HiveMind</text>
+  <text x="584" y="100" text-anchor="middle" fill="#94a3b8" font-size="15" font-family="system-ui, sans-serif">Intelligence collective · 100% P2P · Zéro serveur central</text>
+
+  <!-- USERS -->
+  <rect x="160" y="160" width="160" height="90" rx="16" fill="#1e293b" stroke="#22d3ee" stroke-width="1.5"/>
+  <circle cx="240" cy="196" r="18" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1"/>
+  <text x="240" y="202" text-anchor="middle" fill="#22d3ee" font-size="14" font-family="system-ui, sans-serif">A</text>
+  <text x="240" y="238" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="system-ui, sans-serif">Alice</text>
+  <text x="240" y="256" text-anchor="middle" fill="#64748b" font-size="10" font-family="system-ui, sans-serif">alice.jsonl</text>
+
+  <rect x="400" y="160" width="160" height="90" rx="16" fill="#1e293b" stroke="#22d3ee" stroke-width="1.5"/>
+  <circle cx="480" cy="196" r="18" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1"/>
+  <text x="480" y="202" text-anchor="middle" fill="#22d3ee" font-size="14" font-family="system-ui, sans-serif">B</text>
+  <text x="480" y="238" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="system-ui, sans-serif">Bob</text>
+  <text x="480" y="256" text-anchor="middle" fill="#64748b" font-size="10" font-family="system-ui, sans-serif">bob.jsonl</text>
+
+  <rect x="640" y="160" width="160" height="90" rx="16" fill="#1e293b" stroke="#22d3ee" stroke-width="1.5"/>
+  <circle cx="720" cy="196" r="18" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1"/>
+  <text x="720" y="202" text-anchor="middle" fill="#22d3ee" font-size="14" font-family="system-ui, sans-serif">C</text>
+  <text x="720" y="238" text-anchor="middle" fill="white" font-size="13" font-weight="600" font-family="system-ui, sans-serif">Charles</text>
+  <text x="720" y="256" text-anchor="middle" fill="#64748b" font-size="10" font-family="system-ui, sans-serif">charles.jsonl</text>
+
+  <rect x="860" y="160" width="130" height="90" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="925" y="212" text-anchor="middle" fill="#475569" font-size="22" font-family="system-ui, sans-serif">···</text>
+  <text x="925" y="246" text-anchor="middle" fill="#64748b" font-size="10" font-family="system-ui, sans-serif">+ N membres</text>
+
+  <!-- ARROWS users → Syncthing -->
+  <path d="M 240 250 L 240 310 Q 240 330 260 330 L 534 330" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+  <path d="M 480 250 L 480 310 Q 480 330 500 330 L 534 330" fill="none" stroke="#22d3ee" stroke-width="1.5"/>
+  <path d="M 720 250 L 720 310 Q 720 330 700 330 L 634 330" fill="none" stroke="#22d3ee" stroke-width="1.5"/>
+  <path d="M 925 250 L 925 310 Q 925 330 905 330 L 634 330" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- SYNCTHING -->
+  <rect x="280" y="300" width="608" height="60" rx="14" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="584" y="330" text-anchor="middle" fill="#fbbf24" font-size="15" font-weight="700" font-family="system-ui, sans-serif">📡 Syncthing P2P</text>
+  <text x="584" y="350" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif">memory/events/ partagé · Append-only JSONL · Chiffré TLS</text>
+
+  <!-- Syncthing → Merge Engine -->
+  <line x1="584" y1="360" x2="584" y2="415" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)"/>
+
+  <!-- MERGE ENGINE -->
+  <rect x="344" y="420" width="480" height="85" rx="16" fill="rgba(6,78,59,0.1)" stroke="#34d399" stroke-width="2"/>
+  <text x="584" y="452" text-anchor="middle" fill="#34d399" font-size="16" font-weight="700" font-family="system-ui, sans-serif">⚙️ Merge Engine</text>
+  <text x="584" y="474" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="system-ui, sans-serif">Lit tous les JSONL · Trie · Rejoue les événements</text>
+  <text x="584" y="494" text-anchor="middle" fill="#64748b" font-size="10" font-family="system-ui, sans-serif">Idempotent · Last-write-wins · FTS5 · Conflict files Syncthing</text>
+
+  <!-- Merge Engine → DB -->
+  <line x1="584" y1="505" x2="584" y2="555" stroke="#34d399" stroke-width="2" marker-end="url(#arrowEmerald)"/>
+
+  <!-- 3 CONSOLIDATED DB -->
+  <rect x="220" y="560" width="200" height="72" rx="12" fill="rgba(124,58,237,0.08)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="320" y="590" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700" font-family="system-ui, sans-serif">💾 consolidated.db</text>
+  <text x="320" y="610" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Alice · SQLite FTS5</text>
+  <text x="320" y="626" text-anchor="middle" fill="#64748b" font-size="9" font-family="system-ui, sans-serif">Reconstruit localement</text>
+
+  <rect x="484" y="560" width="200" height="72" rx="12" fill="rgba(124,58,237,0.08)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="584" y="590" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700" font-family="system-ui, sans-serif">💾 consolidated.db</text>
+  <text x="584" y="610" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Bob · SQLite FTS5</text>
+  <text x="584" y="626" text-anchor="middle" fill="#64748b" font-size="9" font-family="system-ui, sans-serif">Reconstruit localement</text>
+
+  <rect x="748" y="560" width="200" height="72" rx="12" fill="rgba(124,58,237,0.08)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="848" y="590" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700" font-family="system-ui, sans-serif">💾 consolidated.db</text>
+  <text x="848" y="610" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Charles · SQLite FTS5</text>
+  <text x="848" y="626" text-anchor="middle" fill="#64748b" font-size="9" font-family="system-ui, sans-serif">Reconstruit localement</text>
+
+  <!-- IDENTICAL badge -->
+  <rect x="498" y="640" width="172" height="24" rx="12" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1"/>
+  <text x="584" y="656" text-anchor="middle" fill="#34d399" font-size="11" font-weight="600" font-family="system-ui, sans-serif">✅ 3 copies identiques</text>
+
+  <!-- LEFT SIDEBAR -->
+  <rect x="40" y="160" width="100" height="420" rx="12" fill="rgba(30,41,59,0.3)" stroke="#1e293b" stroke-width="1"/>
+  
+  <rect x="52" y="175" width="76" height="75" rx="8" fill="rgba(148,163,184,0.06)" stroke="#64748b" stroke-width="1"/>
+  <text x="90" y="200" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" font-family="system-ui, sans-serif">🐙 Git</text>
+  <text x="90" y="218" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">skills/</text>
+  <text x="90" y="232" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">config</text>
+  <text x="90" y="246" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">USER.md</text>
+
+  <rect x="52" y="265" width="76" height="50" rx="8" fill="rgba(251,191,36,0.06)" stroke="#fbbf24" stroke-width="1"/>
+  <text x="90" y="285" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600" font-family="system-ui, sans-serif">📡 Sync</text>
+  <text x="90" y="303" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">events/</text>
+
+  <rect x="52" y="330" width="76" height="75" rx="8" fill="rgba(34,211,238,0.04)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="90" y="355" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600" font-family="system-ui, sans-serif">🏠 Local</text>
+  <text x="90" y="373" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">consolidated</text>
+  <text x="90" y="387" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">.db</text>
+  <text x="90" y="403" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">.env</text>
+
+  <!-- RIGHT SIDEBAR -->
+  <rect x="1028" y="160" width="120" height="470" rx="12" fill="rgba(30,41,59,0.3)" stroke="#1e293b" stroke-width="1"/>
+  <text x="1088" y="190" text-anchor="middle" fill="white" font-size="11" font-weight="700" font-family="system-ui, sans-serif">Transport</text>
+  <line x1="1040" y1="200" x2="1136" y2="200" stroke="#1e293b" stroke-width="1"/>
+
+  <rect x="1040" y="215" width="12" height="12" rx="3" fill="#64748b"/>
+  <text x="1062" y="226" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Git</text>
+  
+  <rect x="1040" y="245" width="12" height="12" rx="3" fill="#fbbf24"/>
+  <text x="1062" y="256" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Syncthing</text>
+  
+  <rect x="1040" y="275" width="12" height="12" rx="3" fill="#22d3ee" stroke="#22d3ee" stroke-width="0.5" stroke-dasharray="2,1"/>
+  <text x="1062" y="286" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif">Local only</text>
+
+  <line x1="1040" y1="305" x2="1136" y2="305" stroke="#1e293b" stroke-width="1"/>
+  <text x="1088" y="325" text-anchor="middle" fill="white" font-size="10" font-weight="600" font-family="system-ui, sans-serif">Usages</text>
+
+  <text x="1048" y="348" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Audit</text>
+  <text x="1048" y="366" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Conseil</text>
+  <text x="1048" y="384" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Forensic</text>
+  <text x="1048" y="402" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Fiscalité</text>
+  <text x="1048" y="420" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Compliance</text>
+  <text x="1048" y="438" fill="#94a3b8" font-size="9" font-family="system-ui, sans-serif">• Formation</text>
+
+  <line x1="1040" y1="460" x2="1136" y2="460" stroke="#1e293b" stroke-width="1"/>
+  <text x="1088" y="480" text-anchor="middle" fill="#64748b" font-size="9" font-family="system-ui, sans-serif">N membres</text>
+  <text x="1088" y="498" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="600" font-family="system-ui, sans-serif">∞ scaling</text>
+  <text x="1088" y="516" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">P2P pur</text>
+  <text x="1088" y="534" text-anchor="middle" fill="#64748b" font-size="8" font-family="system-ui, sans-serif">0 serveur</text>
+
+  <!-- FOOTER -->
+  <text x="584" y="710" text-anchor="middle" fill="#475569" font-size="13" font-family="system-ui, sans-serif">🐝 Un Hermes · Un groupe · Une mémoire collective</text>
+
+  <!-- SECURITY -->
+  <rect x="370" y="732" width="428" height="26" rx="8" fill="rgba(251,113,133,0.04)" stroke="#fb7185" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <text x="584" y="750" text-anchor="middle" fill="#fb7185" font-size="10" font-family="system-ui, sans-serif">🔒 .env privé · jamais sync · chaque membre a ses propres clés API</text>
+
+</svg>
