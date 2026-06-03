@@ -26,7 +26,23 @@ cp ~/.hermes/profiles/cabinet-ascent/.env.example ~/.hermes/profiles/cabinet-asc
 nano ~/.hermes/profiles/cabinet-ascent/.env
 ```
 
-Remplis avec **tes** clés API personnelles. Le `.env` n'est **jamais** sync — chaque membre a ses propres clés.
+Remplis avec **tes** clés API personnelles.
+
+### ⚠️ API Keys (.env) — JAMAIS sync
+
+Le fichier `.env` ne doit **PAS** être dans le dossier Syncthing (`memory/`). Il est à la racine du profil, hors de portée de Syncthing et de Git.
+
+**Risques si le `.env` est sync :**
+- 🔴 Clés API exposées si une machine est compromise
+- 🔴 Tous les comptes accessibles avec les clés volées
+- 🟡 Métadonnées visibles par les relais Syncthing
+
+**Sécurité en place :**
+- `.gitignore` bloque `.env` → jamais dans Git  
+- Syncthing ne partage que `memory/` → `.env` hors de portée
+- Chaque membre remplit son `.env` **manuellement** avec ses propres clés
+
+> 📋 Transférer les clés API entre machines ? Utiliser un transfert manuel (SSH, USB, copier-coller sécurisé). **Jamais via Syncthing.**
 
 ---
 
