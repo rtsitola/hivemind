@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HiveMind — Architecture 10 Utilisateurs</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+    .container { max-width: 1300px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot {
+      width: 12px; height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    svg { width: 100%; min-width: 1100px; display: block; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>HiveMind — Architecture 10 Utilisateurs</h1>
+      </div>
+      <p class="subtitle">Intelligence collective pour le cabinet. Pas de serveur central — 100% P2P.</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1200 880">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrowCyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrowAmber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <marker id="arrowRose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <marker id="arrowViolet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- =============================================
+             SECTION 1: GITHUB REPO (top center)
+             ============================================= -->
+        <rect x="440" y="20" width="320" height="70" rx="8" fill="rgba(30, 41, 59, 0.6)" stroke="#94a3b8" stroke-width="2"/>
+        <text x="600" y="44" fill="white" font-size="13" font-weight="700" text-anchor="middle">🐝 GitHub Repo</text>
+        <text x="600" y="62" fill="#94a3b8" font-size="9" text-anchor="middle">skills/ · config.yaml · USER.md</text>
+        <text x="600" y="78" fill="#fbbf24" font-size="8" text-anchor="middle">git clone × 10</text>
+
+        <!-- Git arrows down to users -->
+        <line x1="505" y1="90" x2="120" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="520" y1="90" x2="240" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="545" y1="90" x2="360" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="580" y1="90" x2="480" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="615" y1="90" x2="600" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="655" y1="90" x2="720" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="680" y1="90" x2="840" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="695" y1="90" x2="960" y2="134" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="685" y1="90" x2="120" y2="200" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+        <line x1="695" y1="90" x2="480" y2="200" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowhead)"/>
+
+        <!-- =============================================
+             SECTION 2: 10 UTILISATEURS (two rows of 5)
+             ============================================= -->
+
+        <!-- Row 1: Users 1-5 -->
+        <!-- User 1 -->
+        <rect x="50" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <rect x="50" y="140" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="50" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="120" y="160" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Alice</text>
+        <text x="120" y="178" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · alice.jsonl</text>
+
+        <!-- User 2 -->
+        <rect x="220" y="140" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="220" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="290" y="160" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Bob</text>
+        <text x="290" y="178" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · bob.jsonl</text>
+
+        <!-- User 3 -->
+        <rect x="390" y="140" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="390" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="460" y="160" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Charles</text>
+        <text x="460" y="178" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · charles.jsonl</text>
+
+        <!-- User 4 -->
+        <rect x="560" y="140" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="560" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="630" y="160" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 David</text>
+        <text x="630" y="178" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · david.jsonl</text>
+
+        <!-- User 5 -->
+        <rect x="730" y="140" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="730" y="140" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="800" y="160" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Emma</text>
+        <text x="800" y="178" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · emma.jsonl</text>
+
+        <!-- Row 2: Users 6-10 -->
+        <!-- User 6 -->
+        <rect x="50" y="206" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="50" y="206" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="120" y="226" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Frank</text>
+        <text x="120" y="244" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · frank.jsonl</text>
+
+        <!-- User 7 -->
+        <rect x="220" y="206" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="220" y="206" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="290" y="226" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Grace</text>
+        <text x="290" y="244" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · grace.jsonl</text>
+
+        <!-- User 8 -->
+        <rect x="390" y="206" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="390" y="206" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="460" y="226" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Henri</text>
+        <text x="460" y="244" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · henri.jsonl</text>
+
+        <!-- User 9 -->
+        <rect x="560" y="206" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="560" y="206" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="630" y="226" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Iris</text>
+        <text x="630" y="244" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · iris.jsonl</text>
+
+        <!-- User 10 -->
+        <rect x="730" y="206" width="140" height="52" rx="6" fill="#0f172a"/>
+        <rect x="730" y="206" width="140" height="52" rx="6" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="800" y="226" fill="white" font-size="11" font-weight="600" text-anchor="middle">🧿 Jules</text>
+        <text x="800" y="244" fill="#94a3b8" font-size="8" text-anchor="middle">Hermes · jules.jsonl</text>
+
+        <!-- =============================================
+             SECTION 3: SYNCTHING P2P MESH
+             ============================================= -->
+
+        <!-- Syncthing boundary (amber, large dashed) -->
+        <rect x="30" y="280" width="860" height="200" rx="14" fill="rgba(251, 191, 36, 0.05)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="10,5"/>
+        <text x="50" y="300" fill="#fbbf24" font-size="11" font-weight="700">📡 Syncthing P2P Mesh — 10 nœuds</text>
+        <text x="290" y="300" fill="#94a3b8" font-size="9">memory/events/ partagé · Chiffré TLS · Append-only JSONL</text>
+
+        <!-- Syncthing P2P connections (mesh lines between users) -->
+        <line x1="120" y1="260" x2="460" y2="340" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+        <line x1="290" y1="260" x2="630" y2="340" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+        <line x1="460" y1="260" x2="800" y2="340" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+        <line x1="630" y1="260" x2="120" y2="400" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+        <line x1="800" y1="260" x2="290" y2="400" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+        <line x1="120" y1="260" x2="800" y2="400" stroke="#fbbf24" stroke-width="0.6" opacity="0.25"/>
+
+        <!-- Events directory (center of Syncthing region) -->
+        <rect x="300" y="310" width="320" height="80" rx="8" fill="rgba(120, 53, 15, 0.35)" stroke="#fbbf24" stroke-width="2"/>
+        <text x="460" y="334" fill="white" font-size="12" font-weight="700" text-anchor="middle">memory/events/</text>
+        <text x="460" y="352" fill="#fbbf24" font-size="9" text-anchor="middle">alice.jsonl · bob.jsonl · charles.jsonl · david.jsonl</text>
+        <text x="460" y="368" fill="#fbbf24" font-size="9" text-anchor="middle">emma.jsonl · frank.jsonl · grace.jsonl · henri.jsonl</text>
+        <text x="460" y="384" fill="#fbbf24" font-size="9" text-anchor="middle">iris.jsonl · jules.jsonl</text>
+
+        <!-- Arrows from users to Syncthing -->
+        <line x1="120" y1="258" x2="300" y2="318" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="290" y1="258" x2="350" y2="318" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="460" y1="258" x2="400" y2="318" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="630" y1="258" x2="450" y2="318" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="800" y1="258" x2="500" y2="318" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="120" y1="258" x2="330" y2="380" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="290" y1="258" x2="390" y2="380" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="460" y1="258" x2="440" y2="380" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="630" y1="258" x2="490" y2="380" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+        <line x1="800" y1="258" x2="540" y2="380" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrowCyan)"/>
+
+        <!-- =============================================
+             SECTION 4: MERGE ENGINE + CONSOLIDATED.DB (per user)
+             ============================================= -->
+
+        <!-- Merge engine label -->
+        <text x="460" y="420" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">▼ Watcher détecte les changements → Merge Engine rejoue les JSONL ▼</text>
+
+        <!-- Per-user consolidated.db + watcher boxes -->
+        <!-- Row 1: 5 users -->
+        <rect x="40" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="40" y="505" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="40" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="115" y="525" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="115" y="541" fill="#a78bfa" font-size="7" text-anchor="middle">Alice · FTS5</text>
+
+        <rect x="210" y="505" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="210" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="285" y="525" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="285" y="541" fill="#a78bfa" font-size="7" text-anchor="middle">Bob · FTS5</text>
+
+        <rect x="380" y="505" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="380" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="455" y="525" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="455" y="541" fill="#a78bfa" font-size="7" text-anchor="middle">Charles · FTS5</text>
+
+        <rect x="550" y="505" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="550" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="625" y="525" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="625" y="541" fill="#a78bfa" font-size="7" text-anchor="middle">David · FTS5</text>
+
+        <rect x="720" y="505" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="720" y="505" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="795" y="525" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="795" y="541" fill="#a78bfa" font-size="7" text-anchor="middle">Emma · FTS5</text>
+
+        <!-- Row 2: 5 users -->
+        <rect x="40" y="570" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="40" y="570" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="115" y="590" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="115" y="606" fill="#a78bfa" font-size="7" text-anchor="middle">Frank · FTS5</text>
+
+        <rect x="210" y="570" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="210" y="570" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="285" y="590" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="285" y="606" fill="#a78bfa" font-size="7" text-anchor="middle">Grace · FTS5</text>
+
+        <rect x="380" y="570" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="380" y="570" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="455" y="590" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="455" y="606" fill="#a78bfa" font-size="7" text-anchor="middle">Henri · FTS5</text>
+
+        <rect x="550" y="570" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="550" y="570" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="625" y="590" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="625" y="606" fill="#a78bfa" font-size="7" text-anchor="middle">Iris · FTS5</text>
+
+        <rect x="720" y="570" width="150" height="50" rx="6" fill="#0f172a"/>
+        <rect x="720" y="570" width="150" height="50" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="795" y="590" fill="white" font-size="9" font-weight="600" text-anchor="middle">consolidated.db</text>
+        <text x="795" y="606" fill="#a78bfa" font-size="7" text-anchor="middle">Jules · FTS5</text>
+
+        <!-- "Identique" annotations -->
+        <rect x="880" y="515" width="100" height="22" rx="4" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="930" y="530" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">✅ IDENTIQUES</text>
+
+        <!-- =============================================
+             SECTION 5: .env PRIVATE (bottom)
+             ============================================= -->
+
+        <rect x="30" y="650" width="860" height="90" rx="12" fill="rgba(136, 19, 55, 0.06)" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="50" y="672" fill="#fb7185" font-size="11" font-weight="700">🔒 .env — PRIVÉ, jamais sync (N copies)</text>
+
+        <!-- 10 small .env boxes -->
+        <rect x="50" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="86" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="86" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Alice</text>
+
+        <rect x="134" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="170" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="170" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Bob</text>
+
+        <rect x="218" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="254" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="254" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Charles</text>
+
+        <rect x="302" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="338" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="338" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">David</text>
+
+        <rect x="386" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="422" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="422" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Emma</text>
+
+        <rect x="470" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="506" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="506" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Frank</text>
+
+        <rect x="554" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="590" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="590" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Grace</text>
+
+        <rect x="638" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="674" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="674" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Henri</text>
+
+        <rect x="722" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="758" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="758" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Iris</text>
+
+        <rect x="806" y="690" width="72" height="36" rx="4" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="842" y="706" fill="#fb7185" font-size="7" font-weight="600" text-anchor="middle">.env</text>
+        <text x="842" y="718" fill="#94a3b8" font-size="6" text-anchor="middle">Jules</text>
+
+        <text x="460" y="738" fill="#fb7185" font-size="8" text-anchor="middle">Chaque .env contient les clés API PERSONNELLES du membre · Jamais dans Git · Jamais dans Syncthing</text>
+
+        <!-- =============================================
+             SECTION 6: WHAT DOESN'T CHANGE WITH N USERS
+             ============================================= -->
+        <rect x="920" y="140" width="260" height="520" rx="10" fill="rgba(30, 41, 59, 0.3)" stroke="#1e293b" stroke-width="1"/>
+        <text x="1050" y="170" fill="white" font-size="11" font-weight="700" text-anchor="middle">🔬 Scaling Properties</text>
+
+        <line x1="940" y1="185" x2="1160" y2="185" stroke="#1e293b" stroke-width="1"/>
+
+        <text x="940" y="210" fill="#34d399" font-size="9" font-weight="600">✅ Indépendant de N</text>
+        <text x="940" y="228" fill="#94a3b8" font-size="8">• 1 Git repo (N clones)</text>
+        <text x="940" y="242" fill="#94a3b8" font-size="8">• 1 Syncthing folder (N pairs)</text>
+        <text x="940" y="256" fill="#94a3b8" font-size="8">• Pas de serveur central</text>
+        <text x="940" y="270" fill="#94a3b8" font-size="8">• Pas de DB partagée</text>
+        <text x="940" y="284" fill="#94a3b8" font-size="8">• Pas de consensus distribué</text>
+
+        <line x1="940" y1="305" x2="1160" y2="305" stroke="#1e293b" stroke-width="1"/>
+
+        <text x="940" y="330" fill="#fbbf24" font-size="9" font-weight="600">⚡ Syncthing P2P</text>
+        <text x="940" y="348" fill="#94a3b8" font-size="8">• N nœuds = mesh P2P</text>
+        <text x="940" y="362" fill="#94a3b8" font-size="8">• Chaque nœud = 1 pair</text>
+        <text x="940" y="376" fill="#94a3b8" font-size="8">• Latence ~2-5s LAN</text>
+        <text x="940" y="390" fill="#94a3b8" font-size="8">• Relais WAN ~30s</text>
+        <text x="940" y="404" fill="#94a3b8" font-size="8">• Chiffré TLS bout-en-bout</text>
+
+        <line x1="940" y1="425" x2="1160" y2="425" stroke="#1e293b" stroke-width="1"/>
+
+        <text x="940" y="450" fill="#a78bfa" font-size="9" font-weight="600">💾 Merge Engine</text>
+        <text x="940" y="468" fill="#94a3b8" font-size="8">• JSONL → SQLite local</text>
+        <text x="940" y="482" fill="#94a3b8" font-size="8">• Idempotent (processed)</text>
+        <text x="940" y="496" fill="#94a3b8" font-size="8">• Last-write-wins</text>
+        <text x="940" y="510" fill="#94a3b8" font-size="8">• FTS5 full-text search</text>
+        <text x="940" y="524" fill="#94a3b8" font-size="8">• N copies = identiques</text>
+
+        <line x1="940" y1="545" x2="1160" y2="545" stroke="#1e293b" stroke-width="1"/>
+
+        <text x="940" y="570" fill="#fb7185" font-size="9" font-weight="600">🔒 Évolutivité sécurité</text>
+        <text x="940" y="588" fill="#94a3b8" font-size="8">• 1 compromission = 1 .env</text>
+        <text x="940" y="602" fill="#94a3b8" font-size="8">• Pas de clé partagée</text>
+        <text x="940" y="616" fill="#94a3b8" font-size="8">• Git = code uniquement</text>
+        <text x="940" y="630" fill="#94a3b8" font-size="8">• Syncthing = events seulement</text>
+        <text x="940" y="644" fill="#94a3b8" font-size="8">• Audit trail par agent</text>
+
+        <!-- =============================================
+             LEGEND (top right)
+             ============================================= -->
+        <text x="940" y="30" fill="white" font-size="10" font-weight="700">Legend</text>
+
+        <rect x="940" y="42" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="962" y="50" fill="#94a3b8" font-size="8">Hermes (user)</text>
+
+        <rect x="940" y="58" width="16" height="10" rx="2" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="962" y="66" fill="#94a3b8" font-size="8">Git / External</text>
+
+        <rect x="940" y="74" width="16" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="962" y="82" fill="#94a3b8" font-size="8">Syncthing (P2P)</text>
+
+        <rect x="940" y="90" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="962" y="98" fill="#94a3b8" font-size="8">consolidated.db</text>
+
+        <rect x="940" y="106" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="962" y="114" fill="#94a3b8" font-size="8">.env (private)</text>
+
+      </svg>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>🔑 Ce qui est PARTAGÉ</h3>
+        </div>
+        <ul>
+          <li>• skills/ — Git (clone × 10)</li>
+          <li>• config.yaml — Git</li>
+          <li>• USER.md — Git</li>
+          <li>• memory/events/ — Syncthing P2P</li>
+          <li>• consolidated.db — identique après merge</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>🚫 Ce qui N'EST PAS partagé</h3>
+        </div>
+        <ul>
+          <li>• .env — clés API personnelles</li>
+          <li>• consolidated.db — local, jamais sync</li>
+          <li>• conversations individuelles</li>
+          <li>• Crédits API (chacun son compte)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>⚡ Performance à 10</h3>
+        </div>
+        <ul>
+          <li>• Merge Engine : < 100ms par session</li>
+          <li>• Syncthing : 2-5s LAN, 30s WAN</li>
+          <li>• 0 serveur central requis</li>
+          <li>• 0 consensus distribué (Last-write-wins)</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">
+      HiveMind Phase 1 — Cabinet Ascent · Architecture décentralisée · 10 utilisateurs, 0 serveur
+    </p>
+  </div>
+</body>
+</html>
