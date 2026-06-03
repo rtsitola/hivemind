@@ -50,6 +50,8 @@ python3 hivemind_cli.py init mon-cabinet
 python3 hivemind_cli.py serve mon-cabinet
 ```
 
+> 📖 **Nouveau membre ?** Lis [ONBOARDING.md](../ONBOARDING.md) — guide complet étape par étape.
+
 ## Usage
 
 ```bash
