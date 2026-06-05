@@ -4,8 +4,6 @@
   <img width="800" alt="Athena — Wisdom, Industry, Collective Intelligence" src="../assets/hivemind-athena.jpg" />
 </p>
 
-> **Athena, déesse de la sagesse** — les abeilles dorées reliées par des arcs électriques symbolisent l'intelligence collective : chaque mémoire est un maillon, chaque correction renforce le tout. La chouette veille, le temple abrite le savoir partagé.
-
 > Un Hermes partagé par un groupe. Pas un assistant individuel — une intelligence collective.
 
 <img width="1168" height="784" alt="HiveMind Architecture" src="../hivemind-architecture.svg" />
