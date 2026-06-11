@@ -1,12 +1,12 @@
 # HiveMind — Phase 1 : Intelligence Collective
 
 <p align="center">
-  <img width="800" alt="Athena — Wisdom, Industry, Collective Intelligence" src="../assets/hivemind-athena.jpg" />
+  <img width="800" alt="Athena — Wisdom, Industry, Collective Intelligence" src="docs/athena.jpg" />
 </p>
 
 > Un Hermes partagé par un groupe. Pas un assistant individuel — une intelligence collective.
 
-<img width="1168" height="784" alt="HiveMind Architecture" src="../hivemind-architecture.svg" />
+<img width="1168" height="784" alt="HiveMind Architecture" src="docs/architecture.svg" />
 
 ## Architecture
 
@@ -58,7 +58,7 @@ python3 -m hivemind.hivemind_cli init mon-cabinet
 python3 -m hivemind.hivemind_cli serve mon-cabinet
 ```
 
-> 📖 **Nouveau membre ?** Lis [ONBOARDING.md](../ONBOARDING.md) — guide complet étape par étape.
+> 📖 **Nouveau membre ?** Lis [ONBOARDING.md](docs/ONBOARDING.md) — guide complet étape par étape.
 
 ## Usage
 
@@ -134,4 +134,4 @@ Cluster Weights, pondération, export engine, redistribution — tout est dans l
 
 ## Étape suivante
 
-Déploiement réel → voir `../ONBOARDING.md`
+Déploiement réel → voir `docs/ONBOARDING.md`
