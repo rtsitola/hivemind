@@ -1,2 +1,0 @@
-{"op": "remember", "id": "evt-13612d63", "agent": "alice", "ts": "2026-05-26T06:53:45Z", "payload": {"content": "Test watcher 1 : mémoire d'Alice", "importance": 0.9, "source": "hivemind", "scope": "shared", "veracity": "unknown"}}
-{"op": "remember", "id": "evt-45dc4d21", "agent": "alice", "ts": "2026-05-26T06:53:45Z", "payload": {"content": "Test watcher 2 : autre mémoire", "importance": 0.7, "source": "hivemind", "scope": "shared", "veracity": "unknown"}}

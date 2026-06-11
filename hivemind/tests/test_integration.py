@@ -20,13 +20,13 @@ import glob
 import json
 import sqlite3
 
-PROTOTYPE_DIR = os.path.dirname(os.path.abspath(__file__))
-EVENTS_DIR = os.path.join(PROTOTYPE_DIR, "memory", "events")
-CONSOLIDATED_DB = os.path.join(PROTOTYPE_DIR, "memory", "consolidated.db")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EVENTS_DIR = os.path.join(REPO_ROOT, "memory", "events")
+CONSOLIDATED_DB = os.path.join(REPO_ROOT, "memory", "consolidated.db")
 MNEMOSYNE_DB = os.path.expanduser("~/.hermes/mnemosyne/data/mnemosyne.db")
 
-sys.path.insert(0, PROTOTYPE_DIR)
-from hivemind_mnemosyne import HiveMindMemory
+from hivemind.hivemind_mnemosyne import HiveMindMemory
 
 
 def cleanup():
@@ -167,39 +167,52 @@ def test_integration():
             assert "coentreprises" in updated[0]["content"], "Update non appliqué"
             print(f"   ✅ Update appliqué et visible")
 
-    # ── Phase 6 : Forget ─────────────────────────────────────────
+    # ── Phase 6 : Forget (tombstone) ─────────────────────────────────────────
 
-    sep("Phase 6 : Bob supprime une mémoire")
+    sep("Phase 6 : Bob supprime une mémoire (tombstone)")
 
     # Supprimer la mémoire "PCAOB"
     pcaob = bob.recall("PCAOB", limit=1)
     if pcaob:
         mem_id = pcaob[0]["id"]
         print(f"   Suppression : {mem_id} — {pcaob[0]['content'][:60]}...")
-        bob.forget(mem_id)
+        bob.forget(mem_id, reason="Contact obsolète")
         bob.merge()
 
-        # Vérifier
+        # Vérifier tombstone
         conn = sqlite3.connect(CONSOLIDATED_DB)
-        new_total = conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+        total_after = conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+        active_after = conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
+        ).fetchone()[0]
+        tombstoned = conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE is_deleted = 1"
+        ).fetchone()[0]
         conn.close()
-        print(f"   Total avant forget : {total}")
-        print(f"   Total après forget : {new_total}")
-        assert new_total == total - 1, f"Attendu {total-1}, obtenu {new_total}"
-        print(f"   ✅ Suppression effective")
+        print(f"   Total avant forget : {total} (toutes actives)")
+        print(f"   Total après forget : {total_after} (actives: {active_after}, tombstone: {tombstoned})")
+        assert total_after == total, f"Tombstone: total inchangé, attendu {total}, obtenu {total_after}"
+        assert active_after == total - 1, f"Tombstone: attendu {total-1} actives, obtenu {active_after}"
+        assert tombstoned == 1, f"Tombstone: attendu 1 tombstone, obtenu {tombstoned}"
+        print(f"   ✅ Tombstone actif — mémoire conservée, is_deleted=1")
+
+        # Vérifier que la mémoire n'apparaît plus dans recall (filtrée)
+        pcaob_after = bob.recall("PCAOB", limit=1)
+        assert len(pcaob_after) == 0, "Recall ne doit pas retourner une mémoire tombstoned"
+        print(f"   ✅ Recall filtre les tombstones — 0 résultat pour 'PCAOB'")
 
     # ── Phase 7 : Idempotence ────────────────────────────────────
 
     sep("Phase 7 : Idempotence — re-merge ne change rien")
 
     before = sqlite3.connect(CONSOLIDATED_DB).execute(
-        "SELECT COUNT(*) FROM memories"
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
     ).fetchone()[0]
 
     alice.merge()
 
     after = sqlite3.connect(CONSOLIDATED_DB).execute(
-        "SELECT COUNT(*) FROM memories"
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
     ).fetchone()[0]
 
     assert before == after, f"Idempotence échouée: {before} → {after}"

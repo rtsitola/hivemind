@@ -21,12 +21,12 @@ import signal
 import sqlite3
 import subprocess
 
-PROTOTYPE_DIR = os.path.dirname(os.path.abspath(__file__))
-EVENTS_DIR = os.path.join(PROTOTYPE_DIR, "memory", "events")
-DB_PATH = os.path.join(PROTOTYPE_DIR, "memory", "consolidated.db")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EVENTS_DIR = os.path.join(REPO_ROOT, "memory", "events")
+DB_PATH = os.path.join(REPO_ROOT, "memory", "consolidated.db")
 
-sys.path.insert(0, PROTOTYPE_DIR)
-from hivemind_mnemosyne import HiveMindMemory
+from hivemind.hivemind_mnemosyne import HiveMindMemory
 
 
 def cleanup():
@@ -56,7 +56,7 @@ def test_watcher():
          "--db", DB_PATH,
          "--interval", "0.5",    # poll rapide pour le test
          "--debounce", "1.0"],   # debounce court
-        cwd=PROTOTYPE_DIR,
+        cwd=PACKAGE_DIR,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,

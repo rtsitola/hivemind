@@ -15,7 +15,7 @@ import os
 import argparse
 
 # DRY : import shared helpers
-from hivemind_common import now_iso, event_id as generate_event_id
+from hivemind.hivemind_common import now_iso, event_id as generate_event_id
 
 
 def write_event(events_dir: str, agent: str, event: dict):
@@ -25,7 +25,7 @@ def write_event(events_dir: str, agent: str, event: dict):
 
     # Signer avec hash chain si dispo
     try:
-        from hivemind_chain import ChainState
+        from hivemind.hivemind_chain import ChainState
         state = ChainState(agent=agent, events_dir=events_dir)
         event = state.sign_event(event)
     except Exception:
@@ -87,6 +87,21 @@ def cmd_forget(args):
             "memory_id": args.memory_id,
         },
     }
+    if args.reason:
+        event["payload"]["reason"] = args.reason
+    write_event(args.events_dir, args.agent, event)
+
+
+def cmd_revert(args):
+    event = {
+        "op": "revert",
+        "id": generate_event_id(),
+        "agent": args.agent,
+        "ts": now_iso(),
+        "payload": {
+            "memory_id": args.memory_id,
+        },
+    }
     write_event(args.events_dir, args.agent, event)
 
 
@@ -129,10 +144,18 @@ def main():
     p_upd.set_defaults(func=cmd_update)
 
     # forget
-    p_fgt = sub.add_parser("forget", help="Supprimer une mémoire")
+    p_fgt = sub.add_parser("forget", help="Supprimer une mémoire (tombstone — réversible)")
     p_fgt.add_argument("--memory-id", required=True,
                        help="ID de la mémoire à supprimer")
+    p_fgt.add_argument("--reason",
+                       help="Raison de la suppression (optionnel)")
     p_fgt.set_defaults(func=cmd_forget)
+
+    # revert
+    p_rvt = sub.add_parser("revert", help="Restaurer une mémoire supprimée")
+    p_rvt.add_argument("--memory-id", required=True,
+                       help="ID de la mémoire à restaurer")
+    p_rvt.set_defaults(func=cmd_revert)
 
     args = parser.parse_args()
     args.func(args)

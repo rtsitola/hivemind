@@ -23,7 +23,7 @@ LECTURE  : recall → consolidated.db (avec fallback native Mnemosyne)
 MERGE    : Reconstruit consolidated.db depuis tous les event logs
 
 Usage (standalone):
-    from hivemind_mnemosyne import HiveMindMemory
+    from hivemind.hivemind_mnemosyne import HiveMindMemory
     hm = HiveMindMemory(events_dir="./memory/events", agent="alice")
     hm.remember("Client Omega : vérifier cash-flow", importance=0.9)
     hm.merge()
@@ -55,7 +55,7 @@ DEFAULT_EVENTS_DIR = "./memory/events"
 DEFAULT_CONSOLIDATED_DB = "./memory/consolidated.db"
 
 # DRY : import shared helpers (aliased for backward compatibility)
-from hivemind_common import now_iso as _now_iso, event_id as _event_id
+from hivemind.hivemind_common import now_iso as _now_iso, event_id as _event_id
 
 
 # ── Core Class ─────────────────────────────────────────────────────
@@ -77,17 +77,17 @@ class HiveMindMemory:
         consolidated_db: str = DEFAULT_CONSOLIDATED_DB,
         mnemosyne_db: str = DEFAULT_MNEMOSYNE_DB,
         agent: str = "unknown",
-        merge_engine: Optional[str] = None,
+        
     ):
         self.events_dir = Path(events_dir)
         self.consolidated_db = Path(consolidated_db)
         self.mnemosyne_db = Path(mnemosyne_db)
         self.agent = agent
-        self.merge_engine = merge_engine or self._find_merge_engine()
+        self.merge_engine = None  # unused — merge() now imports directly
 
         # Hash chain + signatures
         try:
-            from hivemind_chain import ChainState
+            from hivemind.hivemind_chain import ChainState
             self.chain_state = ChainState(agent=agent, events_dir=str(events_dir))
         except Exception:
             self.chain_state = None  # cryptography pas installé
@@ -95,17 +95,6 @@ class HiveMindMemory:
         # Créer le dossier events si nécessaire
         self.events_dir.mkdir(parents=True, exist_ok=True)
 
-    def _find_merge_engine(self) -> str:
-        """Trouve le chemin du merge engine."""
-        candidates = [
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "merge_engine.py"),
-            os.path.join(os.getcwd(), "merge_engine.py"),
-        ]
-        for c in candidates:
-            if os.path.exists(c):
-                return c
-        # Dernier recours : chercher dans le même dossier que ce script
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "merge_engine.py")
 
     @property
     def _event_file(self) -> Path:
@@ -171,10 +160,25 @@ class HiveMindMemory:
         self._append_event(event)
         return event["id"]
 
-    def forget(self, memory_id: str) -> str:
-        """Supprime une mémoire via l'Event Log."""
+    def forget(self, memory_id: str, reason: Optional[str] = None) -> str:
+        """Supprime une mémoire (tombstone — soft delete, réversible)."""
+        payload = {"memory_id": memory_id}
+        if reason:
+            payload["reason"] = reason
         event = {
             "op": "forget",
+            "id": _event_id(),
+            "agent": self.agent,
+            "ts": _now_iso(),
+            "payload": payload,
+        }
+        self._append_event(event)
+        return event["id"]
+
+    def revert(self, memory_id: str) -> str:
+        """Restaure une mémoire supprimée (annule le tombstone)."""
+        event = {
+            "op": "revert",
             "id": _event_id(),
             "agent": self.agent,
             "ts": _now_iso(),
@@ -194,7 +198,7 @@ class HiveMindMemory:
 
         # Mettre à jour le prev_hash pour le prochain événement
         if self.chain_state:
-            from hivemind_chain import _event_hash
+            from hivemind.hivemind_chain import _event_hash
             self.chain_state._prev_hash = _event_hash(event)
 
     # ── Read operations ────────────────────────────────────────
@@ -224,7 +228,7 @@ class HiveMindMemory:
                 "SELECT m.id, m.content, m.importance, m.source, m.scope, m.agent, m.created_at "
                 "FROM memories m "
                 "JOIN memories_fts fts ON m.rowid = fts.rowid "
-                "WHERE memories_fts MATCH ? "
+                "WHERE memories_fts MATCH ? AND m.is_deleted = 0 "
                 "ORDER BY m.importance DESC LIMIT ?",
                 (query, limit),
             ).fetchall()
@@ -254,7 +258,7 @@ class HiveMindMemory:
     ) -> list:
         """Requête LIKE sur la DB consolidée."""
         like_q = f"%{query}%"
-        where = "WHERE content LIKE ?"
+        where = "WHERE content LIKE ? AND is_deleted = 0"
         params = [like_q]
         if scope:
             where += " AND scope = ?"
@@ -302,6 +306,12 @@ class HiveMindMemory:
 
         conn = sqlite3.connect(str(self.consolidated_db))
         total = conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+        active = conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
+        ).fetchone()[0]
+        tombstoned = conn.execute(
+            "SELECT COUNT(*) FROM memories WHERE is_deleted = 1"
+        ).fetchone()[0]
 
         by_agent = {}
         for row in conn.execute(
@@ -316,25 +326,31 @@ class HiveMindMemory:
             by_scope[row[0]] = row[1]
 
         conn.close()
-        return {"total": total, "by_agent": by_agent, "by_scope": by_scope}
+        return {
+            "total": total,
+            "active": active,
+            "tombstoned": tombstoned,
+            "by_agent": by_agent,
+            "by_scope": by_scope,
+        }
 
     # ── Merge ──────────────────────────────────────────────────
 
     def merge(self) -> dict:
         """
         Lance le merge engine pour reconstruire consolidated.db.
+        Utilise un import direct (plus de subprocess).
         """
-        cmd = [
-            sys.executable,
-            self.merge_engine,
-            "--events-dir", str(self.events_dir),
-            "--db", str(self.consolidated_db),
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"[MERGE ERROR] {result.stderr}", file=sys.stderr)
-            return {"error": result.stderr}
-        return {"ok": True, "output": result.stdout}
+        try:
+            from hivemind.merge_engine import merge
+            result = merge(
+                events_dir=str(self.events_dir),
+                db_path=str(self.consolidated_db),
+            )
+            return {"ok": True, "output": str(result)}
+        except Exception as e:
+            print(f"[MERGE ERROR] {e}", file=sys.stderr)
+            return {"error": str(e)}
 
     # ── Bootstrap ──────────────────────────────────────────────
 
@@ -439,6 +455,11 @@ def main():
     # forget
     p_fgt = sub.add_parser("forget")
     p_fgt.add_argument("--memory-id", required=True)
+    p_fgt.add_argument("--reason", help="Raison de la suppression")
+
+    # revert
+    p_rvt = sub.add_parser("revert", help="Restaurer une mémoire supprimée")
+    p_rvt.add_argument("--memory-id", required=True)
 
     # recall
     p_rec = sub.add_parser("recall")
@@ -480,7 +501,11 @@ def main():
         print(json.dumps({"event_id": event_id}))
 
     elif args.command == "forget":
-        event_id = hm.forget(args.memory_id)
+        event_id = hm.forget(args.memory_id, reason=getattr(args, 'reason', None))
+        print(json.dumps({"event_id": event_id}))
+
+    elif args.command == "revert":
+        event_id = hm.revert(args.memory_id)
         print(json.dumps({"event_id": event_id}))
 
     elif args.command == "recall":

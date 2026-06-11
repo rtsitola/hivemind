@@ -13,15 +13,16 @@ import os
 import json
 import sqlite3
 
-PROTOTYPE_DIR = os.path.dirname(os.path.abspath(__file__))
-EVENTS_DIR = os.path.join(PROTOTYPE_DIR, "memory", "events")
-DB_PATH = os.path.join(PROTOTYPE_DIR, "memory", "consolidated.db")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EVENTS_DIR = os.path.join(REPO_ROOT, "memory", "events")
+DB_PATH = os.path.join(REPO_ROOT, "memory", "consolidated.db")
 
 
 def run(*args, cwd=None):
     """Lance une commande avec des arguments safe (pas de shell)."""
     cmd = [str(a) for a in args]
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd or PROTOTYPE_DIR)
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd or PACKAGE_DIR)
     print(result.stdout.rstrip())
     if result.returncode != 0:
         print(f"[ERREUR] {result.stderr.rstrip()}", file=sys.stderr)
@@ -43,26 +44,26 @@ def test_scenario():
     print("  TEST HIVEMIND MERGE ENGINE")
     print("=" * 60)
 
-    WRITER = os.path.join(PROTOTYPE_DIR, "event_writer.py")
-    MERGER = os.path.join(PROTOTYPE_DIR, "merge_engine.py")
+    WRITER = os.path.join(PACKAGE_DIR, "event_writer.py")  # package-relative
+    MERGER = os.path.join(PACKAGE_DIR, "merge_engine.py")
 
     # ── Scénario ──────────────────────────────────────────────────
 
     print("\n─── Phase 1 : Alice et Bob écrivent des souvenirs ───\n")
 
-    run("python3", WRITER, "--agent", "alice", "remember",
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "alice", "remember",
         "Client Omega : toujours demander le cash-flow statement avant l'audit",
         "--importance", "0.9", "--source", "correction", "--scope", "audit")
 
-    run("python3", WRITER, "--agent", "alice", "remember",
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "alice", "remember",
         "Seuil matérialité IFRS : 5% du résultat net, pas du CA pour ce cabinet",
         "--importance", "0.95", "--source", "decision-comite", "--scope", "shared")
 
-    run("python3", WRITER, "--agent", "bob", "remember",
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "bob", "remember",
         "Client Gamma : structure de prix de transfert complexe, nécessite fiscaliste dédié",
         "--importance", "0.85", "--source", "discovery", "--scope", "fiscal")
 
-    run("python3", WRITER, "--agent", "bob", "remember",
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "bob", "remember",
         "Toujours vérifier les parties liées avant la circularisation",
         "--importance", "0.7", "--source", "best-practice", "--scope", "shared")
 
@@ -90,7 +91,7 @@ def test_scenario():
     memory_id = mem[0]
     print(f"   memory_id cible : {memory_id}")
 
-    run("python3", WRITER, "--agent", "alice", "update",
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "alice", "update",
         "--memory-id", memory_id,
         "--content", "Toujours vérifier les parties liées et les covenants bancaires avant la circularisation",
         "--importance", "0.85")
@@ -107,21 +108,62 @@ def test_scenario():
     assert "covenants bancaires" in updated[0], "Mise à jour non appliquée"
     assert updated[1] == 0.85, f"Importance: attendu 0.85, obtenu {updated[1]}"
 
-    print("\n─── Phase 6 : Bob supprime une mémoire obsolète ───\n")
+    print("\n─── Phase 6 : Bob supprime une mémoire obsolète (tombstone) ───\n")
 
     mem_gamma = conn.execute(
         "SELECT id FROM memories WHERE content LIKE '%Gamma%'"
     ).fetchone()
     gamma_id = mem_gamma[0]
 
-    run("python3", WRITER, "--agent", "bob", "forget", "--memory-id", gamma_id)
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "bob", "forget", "--memory-id", gamma_id,
+        "--reason", "Client archivé")
     run("python3", MERGER, "--events-dir", EVENTS_DIR, "--db", DB_PATH)
 
-    final_count = conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
-    print(f"\n   Mémoires après forget : {final_count}")
-    assert final_count == 3, f"Après forget: attendu 3, obtenu {final_count}"
+    # Vérifier tombstone : mémoire toujours en base mais is_deleted=1
+    total_after_forget = conn.execute("SELECT COUNT(*) FROM memories").fetchone()[0]
+    active_after_forget = conn.execute(
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
+    ).fetchone()[0]
+    tombstoned = conn.execute(
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 1"
+    ).fetchone()[0]
+    print(f"\n   Total mémoires : {total_after_forget} (actives: {active_after_forget}, tombstone: {tombstoned})")
+    assert total_after_forget == 4, f"Tombstone: attendu 4 total, obtenu {total_after_forget}"
+    assert active_after_forget == 3, f"Tombstone: attendu 3 actives, obtenu {active_after_forget}"
+    assert tombstoned == 1, f"Tombstone: attendu 1 tombstone, obtenu {tombstoned}"
 
-    print("\n─── Phase 7 : Idempotence finale ───\n")
+    # Vérifier les métadonnées du tombstone
+    tombstone_row = conn.execute(
+        "SELECT deleted_by, tombstone_reason FROM memories WHERE id = ?", (gamma_id,)
+    ).fetchone()
+    assert tombstone_row[0] == "bob", f"deleted_by: attendu bob, obtenu {tombstone_row[0]}"
+    assert tombstone_row[1] == "Client archivé", f"reason: attendu 'Client archivé', obtenu {tombstone_row[1]}"
+    print(f"   deleted_by={tombstone_row[0]}, reason={tombstone_row[1]} ✅")
+
+    print("\n─── Phase 7 : Alice restaure la mémoire (revert) ───\n")
+
+    run("python3", WRITER, "--events-dir", EVENTS_DIR, "--agent", "alice", "revert", "--memory-id", gamma_id)
+    run("python3", MERGER, "--events-dir", EVENTS_DIR, "--db", DB_PATH)
+
+    # Vérifier restauration
+    active_after_revert = conn.execute(
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 0"
+    ).fetchone()[0]
+    tombstoned_after_revert = conn.execute(
+        "SELECT COUNT(*) FROM memories WHERE is_deleted = 1"
+    ).fetchone()[0]
+    reverted_row = conn.execute(
+        "SELECT is_deleted, reverted_by, deleted_by FROM memories WHERE id = ?", (gamma_id,)
+    ).fetchone()
+    print(f"\n   Actives: {active_after_revert}, Tombstones: {tombstoned_after_revert}")
+    assert active_after_revert == 4, f"Revert: attendu 4 actives, obtenu {active_after_revert}"
+    assert tombstoned_after_revert == 0, f"Revert: attendu 0 tombstone, obtenu {tombstoned_after_revert}"
+    assert reverted_row[0] == 0, f"is_deleted doit être 0"
+    assert reverted_row[1] == "alice", f"reverted_by: attendu alice, obtenu {reverted_row[1]}"
+    assert reverted_row[2] is None, f"deleted_by doit être NULL après revert"
+    print(f"   reverted_by={reverted_row[1]}, is_deleted={reverted_row[0]}, deleted_by=NULL ✅")
+
+    print("\n─── Phase 8 : Idempotence finale ───\n")
     run("python3", MERGER, "--events-dir", EVENTS_DIR, "--db", DB_PATH)
     run("python3", MERGER, "--stats", "--db", DB_PATH)
 

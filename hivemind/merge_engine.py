@@ -31,8 +31,8 @@ from datetime import datetime, timezone
 from typing import Optional
 
 # Shared helpers
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from hivemind_common import now_iso, generate_memory_id
+# Shared helpers
+from hivemind.hivemind_common import now_iso, generate_memory_id
 
 
 # ── Database schema ────────────────────────────────────────────────
@@ -51,7 +51,13 @@ CREATE TABLE IF NOT EXISTS memories (
     created_at TEXT,
     updated_at TEXT,
     event_id TEXT,           -- dernier event_id qui a touché cette mémoire
-    event_ts TEXT             -- timestamp du dernier événement
+    event_ts TEXT,            -- timestamp du dernier événement
+    is_deleted INTEGER DEFAULT 0,   -- tombstone: 0=actif, 1=supprimé
+    deleted_at TEXT,                 -- timestamp de suppression
+    deleted_by TEXT,                 -- agent qui a supprimé
+    tombstone_reason TEXT,           -- raison optionnelle
+    reverted_by TEXT,                -- agent qui a restauré
+    reverted_at TEXT                 -- timestamp de restauration
 );
 
 CREATE TABLE IF NOT EXISTS processed_events (
@@ -169,6 +175,7 @@ def merge_events(
     events: list[dict],
     db_path: str = "consolidated.db",
     dry_run: bool = False,
+    cluster_config=None,  # Optional[ClusterConfig] — si fourni, valide les agents
 ) -> dict:
     """
     Lit tous les événements, rejoue dans l'ordre, écrit la DB consolidée.
@@ -176,9 +183,11 @@ def merge_events(
     Règles :
       - remember → INSERT (si pas déjà vu via processed_events)
       - update   → UPDATE si la mémoire existe, sinon crée
-      - forget   → DELETE
+      - forget   → Soft DELETE (tombstone: is_deleted=1, réversible)
+      - revert   → Restaure une mémoire supprimée (is_deleted=0)
       - Même event_id = idempotent (via processed_events)
       - Last-write-wins pour les conflits (timestamp le plus récent)
+      - Si cluster_config fourni : avertit si agent inconnu (ne bloque pas)
 
     Returns:
         dict avec les stats
@@ -187,7 +196,17 @@ def merge_events(
     if dry_run:
         print(f"[DRY RUN] {len(events)} événements chargés, pas d'écriture")
         return {"events_loaded": len(events), "merged": 0, "updated": 0,
-                "deleted": 0, "skipped": 0, "errors": 0}
+                "deleted": 0, "reverted": 0, "skipped": 0, "errors": 0}
+
+    # Validation des agents (si config dispo)
+    unknown_agents = set()
+    if cluster_config is not None:
+        for event in events:
+            agent = event.get("agent", "")
+            # Ne pas valider les agents cluster:xxx ni les cross-cluster messages
+            if agent and not agent.startswith("cluster:") and agent != "unknown":
+                if not cluster_config.is_known_agent(agent):
+                    unknown_agents.add(agent)
 
     conn = sqlite3.connect(db_path)
     conn.executescript(SCHEMA)
@@ -208,10 +227,17 @@ def merge_events(
         lock_fd.close()
         conn.close()
         return {"events_loaded": len(events), "merged": 0, "updated": 0,
-                "deleted": 0, "skipped": 0, "errors": 0, "locked": True}
+                "deleted": 0, "reverted": 0, "skipped": 0, "errors": 0, "locked": True}
 
     stats = {"events_loaded": len(events), "merged": 0, "updated": 0,
-             "deleted": 0, "skipped": 0, "errors": 0}
+             "deleted": 0, "reverted": 0, "skipped": 0, "errors": 0}
+
+    if unknown_agents:
+        stats["unknown_agents"] = sorted(unknown_agents)
+        print(f"[WARN] {len(unknown_agents)} agent(s) inconnu(s) détecté(s): "
+              f"{', '.join(sorted(unknown_agents))}", file=sys.stderr)
+        print(f"       Ces agents ne sont dans aucun cluster. "
+              f"Ajoutez-les dans clusters.yaml.", file=sys.stderr)
 
     processed_ids = set()
     to_process = []
@@ -245,6 +271,10 @@ def merge_events(
         elif op == "forget":
             _handle_forget(conn, event, ts)
             stats["deleted"] += 1
+
+        elif op == "revert":
+            _handle_revert(conn, event, ts)
+            stats["reverted"] += 1
 
         elif op == "message":
             event.setdefault("payload", {})
@@ -338,14 +368,52 @@ def _handle_update(conn: sqlite3.Connection, event: dict, ts: str):
 
 
 def _handle_forget(conn: sqlite3.Connection, event: dict, ts: str):
-    """Supprime une mémoire."""
+    """Marque une mémoire comme supprimée (tombstone — soft delete)."""
     memory_id = event.get("payload", {}).get("memory_id")
 
     if not memory_id:
         print(f"[WARN] forget {event.get('id')} sans memory_id", file=sys.stderr)
         return
 
-    conn.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
+    agent = event.get("agent", "unknown")
+    reason = event.get("payload", {}).get("reason", None)
+
+    conn.execute("""
+        UPDATE memories
+        SET is_deleted = 1,
+            deleted_at = ?,
+            deleted_by = ?,
+            tombstone_reason = ?,
+            updated_at = ?,
+            event_id = ?,
+            event_ts = ?
+        WHERE id = ?
+    """, (ts, agent, reason, ts, event["id"], ts, memory_id))
+
+
+def _handle_revert(conn: sqlite3.Connection, event: dict, ts: str):
+    """Restaure une mémoire supprimée (annule le tombstone)."""
+    memory_id = event.get("payload", {}).get("memory_id")
+
+    if not memory_id:
+        print(f"[WARN] revert {event.get('id')} sans memory_id", file=sys.stderr)
+        return
+
+    agent = event.get("agent", "unknown")
+
+    conn.execute("""
+        UPDATE memories
+        SET is_deleted = 0,
+            deleted_at = NULL,
+            deleted_by = NULL,
+            tombstone_reason = NULL,
+            reverted_by = ?,
+            reverted_at = ?,
+            updated_at = ?,
+            event_id = ?,
+            event_ts = ?
+        WHERE id = ?
+    """, (agent, ts, ts, event["id"], ts, memory_id))
 
 
 # ── CLI ─────────────────────────────────────────────────────────────
@@ -385,7 +453,7 @@ def main():
 
     if args.verify_chains:
         try:
-            from hivemind_chain import verify_all_chains
+            from hivemind.hivemind_chain import verify_all_chains
             results = verify_all_chains(args.events_dir)
             if not results:
                 print("\n✅ Toutes les chaînes sont valides")
@@ -412,6 +480,7 @@ def main():
     print(f"   Nouveaux (remember): {stats['merged']}")
     print(f"   Mis à jour (update) : {stats['updated']}")
     print(f"   Supprimés (forget) : {stats['deleted']}")
+    print(f"   Restaurés (revert) : {stats.get('reverted', 0)}")
     print(f"   Ignorés (déjà vus) : {stats['skipped']}")
     print(f"   Erreurs            : {stats['errors']}")
     print(f"   DB                 : {os.path.abspath(args.db)}")
@@ -427,6 +496,8 @@ def _show_stats(db_path: str):
     conn.row_factory = sqlite3.Row
 
     total = conn.execute("SELECT COUNT(*) as n FROM memories").fetchone()["n"]
+    active = conn.execute("SELECT COUNT(*) as n FROM memories WHERE is_deleted = 0").fetchone()["n"]
+    tombstoned = conn.execute("SELECT COUNT(*) as n FROM memories WHERE is_deleted = 1").fetchone()["n"]
     per_agent = conn.execute(
         "SELECT agent, COUNT(*) as n FROM memories GROUP BY agent ORDER BY n DESC"
     ).fetchall()
@@ -437,6 +508,8 @@ def _show_stats(db_path: str):
 
     print(f"\n📊 Statistiques consolidated.db")
     print(f"   Mémoires totales    : {total}")
+    print(f"     Actives           : {active}")
+    print(f"     En tombstone      : {tombstoned}")
     print(f"   Événements traités  : {processed}")
     print(f"\n   Par agent :")
     for row in per_agent:

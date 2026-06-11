@@ -52,7 +52,8 @@ from datetime import datetime
 
 HERMES_HOME = Path(os.path.expanduser("~/.hermes"))
 PROFILES_DIR = HERMES_HOME / "profiles"
-PROTOTYPE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
+PACKAGE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
+PACKAGE_DIR = PACKAGE_DIR
 
 
 # ── Templates ───────────────────────────────────────────────────────
@@ -282,7 +283,7 @@ def cmd_join(org: str, git_url: str, skip_bootstrap: bool = False):
     # ── Bootstrap ─────────────────────────────────────────────
     if not skip_bootstrap:
         print(f"\n📤 Bootstrap : export de votre mémoire Mnemosyne existante...")
-        bootstrap_script = PROTOTYPE_DIR / "hivemind_mnemosyne.py"
+        bootstrap_script = PACKAGE_DIR / "hivemind_mnemosyne.py"
         if bootstrap_script.exists():
             agent_name = socket.gethostname()
             result = _run([
@@ -335,6 +336,16 @@ def cmd_status(org: str = None):
         print("Aucun profil HiveMind trouvé.\nUtilisez 'hivemind init <org>' pour en créer un.")
         return
 
+    # Essayer de charger la config cluster
+    cluster_cfg = None
+    try:
+        from hivemind_cluster_config import ClusterConfig
+        cluster_cfg = ClusterConfig()
+        if not cluster_cfg._loaded:
+            cluster_cfg = None
+    except ImportError:
+        pass
+
     for org, profile_dir in sorted(profiles.items()):
         print(f"\n🐝 HiveMind : {org}")
         print(f"   Dossier   : {profile_dir}")
@@ -375,6 +386,20 @@ def cmd_status(org: str = None):
         else:
             print(f"   Watcher   : ❌ inactif → 'hivemind serve'")
 
+        # Clusters (Phase 2)
+        if cluster_cfg:
+            profile_short = profile_dir.name
+            matching = [
+                name for name, c in cluster_cfg.clusters.items()
+                if c.get("profile") == profile_short or c.get("profile") == org
+            ]
+            if matching:
+                for cn in matching:
+                    members = cluster_cfg.get_members(cn)
+                    print(f"   Cluster   : {cn} (poids {cluster_cfg.get_weight(cn)}, "
+                          f"{len(members)} membres: {', '.join(members[:5])}"
+                          f"{'...' if len(members) > 5 else ''})")
+
     print()
 
 
@@ -414,10 +439,10 @@ def cmd_serve(org: str):
     events_dir.mkdir(parents=True, exist_ok=True)
 
     db_path = profile_dir / "memory" / "consolidated.db"
-    watcher_script = PROTOTYPE_DIR / "watcher.py"
+    watcher_script = PACKAGE_DIR / "watcher.py"
 
     if not watcher_script.exists():
-        print(f"❌ watcher.py introuvable dans {PROTOTYPE_DIR}")
+        print(f"❌ watcher.py introuvable dans {PACKAGE_DIR}")
         sys.exit(1)
 
     pid = _find_watcher(org)
@@ -461,6 +486,89 @@ def _run(cmd: list, cwd=None, capture=False):
         return subprocess.CompletedProcess(cmd, 1, "", "")
 
 
+# ── Cluster management ───────────────────────────────────────────────
+
+def cmd_cluster_list():
+    """Liste tous les clusters et leurs membres depuis clusters.yaml."""
+    try:
+        from hivemind_cluster_config import ClusterConfig
+    except ImportError:
+        print("❌ Module hivemind_cluster_config introuvable")
+        sys.exit(1)
+
+    cfg = ClusterConfig()
+    if not cfg._loaded:
+        print("❌ Aucun clusters.yaml trouvé.")
+        print("   Créez un fichier clusters.yaml à la racine du repo ou dans le profil global.")
+        print("   Template : voir /mnt/h/project/hivemind/clusters.yaml")
+        sys.exit(1)
+
+    print(cfg.summary())
+
+    errors = cfg.validate()
+    if errors:
+        print(f"⚠️  {len(errors)} remarque(s) :")
+        for e in errors:
+            print(f"   • {e}")
+
+
+def cmd_cluster_show(cluster_name: str):
+    """Affiche les détails d'un cluster."""
+    try:
+        from hivemind_cluster_config import ClusterConfig
+    except ImportError:
+        print("❌ Module hivemind_cluster_config introuvable")
+        sys.exit(1)
+
+    cfg = ClusterConfig()
+    if not cfg._loaded:
+        print("❌ Aucun clusters.yaml trouvé.")
+        sys.exit(1)
+
+    c = cfg.clusters.get(cluster_name)
+    if not c:
+        print(f"❌ Cluster '{cluster_name}' introuvable.")
+        print(f"   Clusters connus : {', '.join(sorted(cfg.clusters.keys()))}")
+        sys.exit(1)
+
+    print(f"🏷️  Cluster : {cluster_name}")
+    print(f"   Profil    : {cfg.get_profile(cluster_name)}")
+    print(f"   Poids     : {cfg.get_weight(cluster_name)}")
+    expertise = cfg.get_expertise(cluster_name)
+    print(f"   Expertise : {', '.join(expertise) if expertise else '(aucune)'}")
+    members = cfg.get_members(cluster_name)
+    print(f"   Membres   : {', '.join(members) if members else '(aucun)'}")
+    print(f"   Multiplicateurs : expertise ×{cfg.expertise_multiplier}, "
+          f"monopole ×{cfg.monopoly_multiplier}")
+
+
+def cmd_cluster_validate():
+    """Valide clusters.yaml."""
+    try:
+        from hivemind_cluster_config import ClusterConfig
+    except ImportError:
+        print("❌ Module hivemind_cluster_config introuvable")
+        sys.exit(1)
+
+    cfg = ClusterConfig()
+    if not cfg._loaded:
+        print("❌ Aucun clusters.yaml trouvé. Créez-en un d'abord.")
+        sys.exit(1)
+
+    errors = cfg.validate()
+    if errors:
+        print(f"❌ {len(errors)} erreur(s) :")
+        for e in errors:
+            print(f"   • {e}")
+        sys.exit(1)
+    else:
+        print("✅ Configuration valide")
+        print(f"   {len(cfg.clusters)} cluster(s), {len(cfg.all_agents())} agent(s)")
+        for name in sorted(cfg.clusters.keys()):
+            members = cfg.get_members(name)
+            print(f"   • {name}: {len(members)} membre(s) — {', '.join(members)}")
+
+
 # ── CLI ─────────────────────────────────────────────────────────────
 
 def main():
@@ -473,6 +581,9 @@ def main():
           hivemind join cabinet-dupont --git-url git@github.com:dupont/hivemind.git
           hivemind status
           hivemind serve cabinet-dupont
+          hivemind cluster list
+          hivemind cluster show audit
+          hivemind cluster validate
         """),
     )
 
@@ -498,6 +609,15 @@ def main():
     p_serve = sub.add_parser("serve", help="Démarrer le watcher")
     p_serve.add_argument("org", help="Nom du HiveMind")
 
+    # cluster
+    p_cluster = sub.add_parser("cluster", help="Gérer les clusters (Phase 2)")
+    cluster_sub = p_cluster.add_subparsers(dest="cluster_command")
+
+    p_cl_list = cluster_sub.add_parser("list", help="Lister tous les clusters et membres")
+    p_cl_show = cluster_sub.add_parser("show", help="Afficher les détails d'un cluster")
+    p_cl_show.add_argument("name", help="Nom du cluster")
+    p_cl_val = cluster_sub.add_parser("validate", help="Valider clusters.yaml")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -512,6 +632,19 @@ def main():
         cmd_status(args.org)
     elif args.command == "serve":
         cmd_serve(args.org)
+    elif args.command == "cluster":
+        if not args.cluster_command:
+            p_cluster.print_help()
+            sys.exit(1)
+        if args.cluster_command == "list":
+            cmd_cluster_list()
+        elif args.cluster_command == "show":
+            cmd_cluster_show(args.name)
+        elif args.cluster_command == "validate":
+            cmd_cluster_validate()
+        else:
+            p_cluster.print_help()
+            sys.exit(1)
 
 
 if __name__ == "__main__":

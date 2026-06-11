@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HiveMind Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+    .container { max-width: 1500px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    svg { width: 100%; min-width: 1400px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card-dot.orange { background: #fb923c; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>HiveMind — Intelligence Collective Décentralisée</h1>
+      </div>
+      <p class="subtitle">Phase 1 (core) + Phase 2 (clustered) · Tests: 9/9 ✓ · Memos: 1664 · Fichiers: 22 .py</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1480 1100">
+        <defs>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <marker id="arrow-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c" />
+          </marker>
+          <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <marker id="arrow-slate" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ================================================================
+             REGION: PHASE 1 — Flat HiveMind (left side)
+             ================================================================ -->
+        <rect x="15" y="15" width="705" height="1070" rx="12" fill="rgba(34, 211, 238, 0.03)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="30" y="36" fill="#22d3ee" font-size="12" font-weight="700">🐝 PHASE 1 — Flat HiveMind</text>
+
+        <!-- ---------- Layer 1: Write (agents) ---------- -->
+        <rect x="35" y="55" width="670" height="155" rx="10" fill="rgba(8, 51, 68, 0.2)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="48" y="74" fill="#22d3ee" font-size="10" font-weight="600">WRITE LAYER — Les agents écrivent</text>
+
+        <!-- Agents -->
+        <rect x="55" y="90" width="95" height="45" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <rect x="55" y="90" width="95" height="45" rx="6" fill="rgba(30, 41, 59, 0.5)"/>
+        <text x="102" y="110" fill="white" font-size="11" font-weight="600" text-anchor="middle">Alice</text>
+        <text x="102" y="126" fill="#94a3b8" font-size="9" text-anchor="middle">Auditeur</text>
+
+        <rect x="175" y="90" width="95" height="45" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <rect x="175" y="90" width="95" height="45" rx="6" fill="rgba(30, 41, 59, 0.5)"/>
+        <text x="222" y="110" fill="white" font-size="11" font-weight="600" text-anchor="middle">Bob</text>
+        <text x="222" y="126" fill="#94a3b8" font-size="9" text-anchor="middle">Junior</text>
+
+        <rect x="295" y="90" width="95" height="45" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <rect x="295" y="90" width="95" height="45" rx="6" fill="rgba(30, 41, 59, 0.5)"/>
+        <text x="342" y="110" fill="white" font-size="11" font-weight="600" text-anchor="middle">Charles</text>
+        <text x="342" y="126" fill="#94a3b8" font-size="9" text-anchor="middle">Stagiaire</text>
+
+        <!-- Arrows agents → Event Writer -->
+        <line x1="150" y1="112" x2="430" y2="112" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)"/>
+        <text x="290" y="106" fill="#94a3b8" font-size="8" text-anchor="middle">remember() / update() / forget()</text>
+
+        <!-- Event Writer -->
+        <rect x="435" y="85" width="120" height="55" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="435" y="85" width="120" height="55" rx="6" fill="rgba(6, 78, 59, 0.4)"/>
+        <text x="495" y="107" fill="white" font-size="11" font-weight="600" text-anchor="middle">Event Writer</text>
+        <text x="495" y="123" fill="#94a3b8" font-size="8" text-anchor="middle">hivemind_mnemosyne.py</text>
+        <text x="495" y="135" fill="#34d399" font-size="7" text-anchor="middle">+ dual-write Mnemosyne</text>
+
+        <!-- Hash chain -->
+        <rect x="570" y="85" width="120" height="45" rx="6" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"/>
+        <rect x="570" y="85" width="120" height="45" rx="6" fill="rgba(136, 19, 55, 0.3)"/>
+        <text x="630" y="107" fill="white" font-size="10" font-weight="600" text-anchor="middle">🔐 Hash Chain</text>
+        <text x="630" y="122" fill="#fb7185" font-size="8" text-anchor="middle">Ed25519 sign</text>
+
+        <line x1="555" y1="112" x2="568" y2="112" stroke="#fb7185" stroke-width="1.2" marker-end="url(#arrow-rose)"/>
+
+        <!-- ---------- Layer 2: Event Log ---------- -->
+        <rect x="35" y="225" width="670" height="120" rx="10" fill="rgba(76, 29, 149, 0.15)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="48" y="244" fill="#a78bfa" font-size="10" font-weight="600">EVENT LOG — Append-only JSONL</text>
+
+        <!-- JSONL files -->
+        <rect x="55" y="260" width="155" height="70" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="55" y="260" width="155" height="70" rx="6" fill="rgba(76, 29, 149, 0.3)"/>
+        <text x="132" y="282" fill="white" font-size="10" font-weight="600" text-anchor="middle">events/alice.jsonl</text>
+        <text x="132" y="300" fill="#94a3b8" font-size="8" text-anchor="middle">{op, id, agent, ts,</text>
+        <text x="132" y="314" fill="#94a3b8" font-size="8" text-anchor="middle"> payload, signature}</text>
+        <text x="132" y="326" fill="#a78bfa" font-size="7" text-anchor="middle">append-only</text>
+
+        <rect x="225" y="260" width="155" height="60" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="225" y="260" width="155" height="60" rx="6" fill="rgba(76, 29, 149, 0.3)"/>
+        <text x="302" y="282" fill="white" font-size="10" font-weight="600" text-anchor="middle">events/bob.jsonl</text>
+        <text x="302" y="300" fill="#94a3b8" font-size="8" text-anchor="middle">remember/update/</text>
+        <text x="302" y="314" fill="#94a3b8" font-size="8" text-anchor="middle">forget/revert</text>
+
+        <rect x="395" y="260" width="155" height="60" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="395" y="260" width="155" height="60" rx="6" fill="rgba(76, 29, 149, 0.3)"/>
+        <text x="472" y="282" fill="white" font-size="10" font-weight="600" text-anchor="middle">events/charles.jsonl</text>
+        <text x="472" y="300" fill="#94a3b8" font-size="8" text-anchor="middle">+ new agents</text>
+        <text x="472" y="314" fill="#94a3b8" font-size="8" text-anchor="middle">= nouveaux fichiers</text>
+
+        <text x="570" y="285" fill="#94a3b8" font-size="9">
+          <tspan x="570" dy="0">• JSONL = humain-lisible</tspan>
+          <tspan x="570" dy="14">• Append = pas de corruption</tspan>
+          <tspan x="570" dy="14">• 1 fichier / agent</tspan>
+          <tspan x="570" dy="14">• Signé Ed25519</tspan>
+          <tspan x="570" dy="14">• Déterministe</tspan>
+        </text>
+
+        <!-- ---------- Layer 3: Transport ---------- -->
+        <rect x="35" y="360" width="670" height="80" rx="10" fill="rgba(251, 191, 36, 0.08)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="48" y="379" fill="#fbbf24" font-size="10" font-weight="600">TRANSPORT — Syncthing P2P</text>
+
+        <rect x="55" y="393" width="200" height="36" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+        <rect x="55" y="393" width="200" height="36" rx="6" fill="rgba(120, 53, 15, 0.25)"/>
+        <text x="155" y="408" fill="white" font-size="10" font-weight="600" text-anchor="middle">🔄 Syncthing Mesh</text>
+        <text x="155" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">P2P · LAN 2-5s · WAN 10-30s</text>
+
+        <line x1="255" y1="411" x2="330" y2="411" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+
+        <rect x="335" y="393" width="180" height="36" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+        <rect x="335" y="393" width="180" height="36" rx="6" fill="rgba(120, 53, 15, 0.25)"/>
+        <text x="425" y="408" fill="white" font-size="10" font-weight="600" text-anchor="middle">📦 Syncthing Relays</text>
+        <text x="425" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">Chiffré · WAN fallback</text>
+
+        <text x="570" y="405" fill="#94a3b8" font-size="9">
+          <tspan x="570" dy="0">• Git → skills, config,</tspan>
+          <tspan x="570" dy="14">  USER.md, clusters.yaml</tspan>
+          <tspan x="570" dy="14">• Syncthing → events/</tspan>
+          <tspan x="570" dy="14">  (JSONL seulement)</tspan>
+        </text>
+
+        <!-- ---------- Layer 4: Merge Engine ---------- -->
+        <rect x="35" y="455" width="670" height="130" rx="10" fill="rgba(6, 78, 59, 0.15)" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="48" y="474" fill="#34d399" font-size="10" font-weight="600">MERGE ENGINE — Reconstruction déterministe</text>
+
+        <line x1="240" y1="429" x2="240" y2="485" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+
+        <!-- Watcher -->
+        <rect x="55" y="490" width="160" height="80" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="55" y="490" width="160" height="80" rx="6" fill="rgba(6, 78, 59, 0.4)"/>
+        <text x="135" y="512" fill="white" font-size="11" font-weight="600" text-anchor="middle">👁️ Watcher</text>
+        <text x="135" y="530" fill="#94a3b8" font-size="8" text-anchor="middle">Poll 0.5s · Debounce 1s</text>
+        <text x="135" y="544" fill="#94a3b8" font-size="8" text-anchor="middle">Détecte fichiers modifiés</text>
+        <text x="135" y="558" fill="#94a3b8" font-size="8" text-anchor="middle">Déclenche merge auto</text>
+        <text x="135" y="570" fill="#34d399" font-size="7" text-anchor="middle">hivemind serve</text>
+
+        <!-- Merge Engine core -->
+        <rect x="240" y="490" width="160" height="80" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="240" y="490" width="160" height="80" rx="6" fill="rgba(6, 78, 59, 0.4)"/>
+        <text x="320" y="512" fill="white" font-size="11" font-weight="600" text-anchor="middle">⚙️ Merge Engine</text>
+        <text x="320" y="530" fill="#94a3b8" font-size="8" text-anchor="middle">Parse JSONL → tri chrono</text>
+        <text x="320" y="544" fill="#94a3b8" font-size="8" text-anchor="middle">Idempotent (event.id)</text>
+        <text x="320" y="558" fill="#94a3b8" font-size="8" text-anchor="middle">LWW conflits (ts)</text>
+        <text x="320" y="570" fill="#34d399" font-size="7" text-anchor="middle">merge_engine.py</text>
+
+        <line x1="215" y1="525" x2="238" y2="525" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+
+        <!-- Lock -->
+        <rect x="425" y="490" width="120" height="50" rx="6" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"/>
+        <rect x="425" y="490" width="120" height="50" rx="6" fill="rgba(136, 19, 55, 0.3)"/>
+        <text x="485" y="512" fill="white" font-size="10" font-weight="600" text-anchor="middle">🔒 fcntl Lock</text>
+        <text x="485" y="528" fill="#94a3b8" font-size="8" text-anchor="middle">1 merge à la fois</text>
+
+        <line x1="400" y1="525" x2="423" y2="525" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+
+        <!-- Agent validation -->
+        <text x="570" y="510" fill="#94a3b8" font-size="9">
+          <tspan x="570" dy="0">• Agent inconnu → WARN</tspan>
+          <tspan x="570" dy="14">  (ne bloque pas)</tspan>
+          <tspan x="570" dy="18">• Tombstone → soft delete</tspan>
+          <tspan x="570" dy="14">  (réversible, revert)</tspan>
+          <tspan x="570" dy="18">• Replay → DB identiques</tspan>
+          <tspan x="570" dy="14">  sur 2 machines</tspan>
+        </text>
+
+        <!-- ---------- Layer 5: consolidated.db + Recall ---------- -->
+        <rect x="35" y="600" width="670" height="120" rx="10" fill="rgba(76, 29, 149, 0.2)" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <text x="48" y="619" fill="#a78bfa" font-size="10" font-weight="600">STORAGE &amp; RECALL — SQLite + FTS5</text>
+
+        <line x1="320" y1="570" x2="320" y2="628" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+        <rect x="55" y="635" width="200" height="70" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="55" y="635" width="200" height="70" rx="6" fill="rgba(76, 29, 149, 0.4)"/>
+        <text x="155" y="655" fill="white" font-size="11" font-weight="600" text-anchor="middle">🗄️ consolidated.db</text>
+        <text x="155" y="673" fill="#94a3b8" font-size="8" text-anchor="middle">SQLite · LOCAL · Jamais sync</text>
+        <text x="155" y="687" fill="#94a3b8" font-size="8" text-anchor="middle">FTS5 full-text search</text>
+        <text x="155" y="701" fill="#a78bfa" font-size="7" text-anchor="middle">is_deleted=0/1 (tombstone)</text>
+
+        <!-- Recall -->
+        <rect x="290" y="635" width="200" height="70" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="290" y="635" width="200" height="70" rx="6" fill="rgba(76, 29, 149, 0.4)"/>
+        <text x="390" y="655" fill="white" font-size="11" font-weight="600" text-anchor="middle">🔍 Recall</text>
+        <text x="390" y="673" fill="#94a3b8" font-size="8" text-anchor="middle">FTS5 MATCH query</text>
+        <text x="390" y="687" fill="#94a3b8" font-size="8" text-anchor="middle">Fallback: LIKE %query%</text>
+        <text x="390" y="701" fill="#a78bfa" font-size="7" text-anchor="middle">→ hivemind_mnemosyne.py</text>
+
+        <line x1="255" y1="668" x2="288" y2="668" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+
+        <!-- Bloom arrow: recall → agents (feedback loop) -->
+        <path d="M 390 635 C 390 620, 390 610, 390 610" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-violet)"/>
+        <text x="400" y="623" fill="#a78bfa" font-size="8">Hermes lit consolidated.db</text>
+
+        <!-- ---------- Bootstrap ---------- -->
+        <rect x="35" y="735" width="670" height="65" rx="10" fill="rgba(34, 211, 238, 0.08)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="48" y="754" fill="#22d3ee" font-size="10" font-weight="600">BOOTSTRAP — Import initial Mnemosyne → Event Log</text>
+
+        <rect x="55" y="768" width="200" height="24" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1"/>
+        <rect x="55" y="768" width="200" height="24" rx="6" fill="rgba(8, 51, 68, 0.3)"/>
+        <text x="155" y="784" fill="white" font-size="9" font-weight="600" text-anchor="middle">Mnemosyne DB → Event Log (1664 mémoires)</text>
+
+        <line x1="255" y1="780" x2="300" y2="780" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arrow-cyan)"/>
+
+        <rect x="305" y="768" width="180" height="24" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1"/>
+        <rect x="305" y="768" width="180" height="24" rx="6" fill="rgba(8, 51, 68, 0.3)"/>
+        <text x="395" y="784" fill="white" font-size="9" font-weight="600" text-anchor="middle">hivemind join → bootstrap</text>
+
+        <!-- Bottom stats -->
+        <rect x="35" y="815" width="670" height="40" rx="8" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+        <text x="370" y="832" fill="#94a3b8" font-size="9" text-anchor="middle">Tests: e2e ✓ · integration ✓ · replay ✓ · watcher ✓ · cli ✓  |  Hash chain Ed25519 · Event ID idempotent · FTS5 search</text>
+        <text x="370" y="848" fill="#475569" font-size="8" text-anchor="middle">merge_engine.py (506 loc) · hivemind_mnemosyne.py (540 loc) · event_writer.py (165 loc) · watcher.py · hivemind_cli.py</text>
+
+        <!-- ================================================================
+             ARROW: Phase 1 → Phase 2
+             ================================================================ -->
+        <line x1="720" y1="500" x2="758" y2="500" stroke="#fb923c" stroke-width="2" marker-end="url(#arrow-orange)"/>
+        <text x="739" y="492" fill="#fb923c" font-size="9" text-anchor="middle">export</text>
+
+        <!-- ================================================================
+             REGION: PHASE 2 — Clustered HiveMind (right side)
+             ================================================================ -->
+        <rect x="762" y="15" width="703" height="1070" rx="12" fill="rgba(251, 146, 60, 0.03)" stroke="#fb923c" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="777" y="36" fill="#fb923c" font-size="12" font-weight="700">🐝🐝🐝 PHASE 2 — Clustered HiveMind</text>
+
+        <!-- clusters.yaml -->
+        <rect x="782" y="50" width="660" height="55" rx="8" fill="rgba(251, 191, 36, 0.08)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="795" y="70" fill="#fbbf24" font-size="10" font-weight="600">📋 clusters.yaml — Définition canonique (Git)</text>
+        <text x="795" y="88" fill="#94a3b8" font-size="8">clusters: audit (1.0, 3 membres), fiscal (1.5, 2 membres), juridique (2.0, 1 membre) · expertise ×2 · monopole ×3</text>
+        <text x="795" y="100" fill="#475569" font-size="7">hivemind cluster list | show | validate  ·  cluster_weights.json généré automatiquement</text>
+
+        <!-- === Cluster 1: AUDIT === -->
+        <rect x="782" y="118" width="660" height="210" rx="10" fill="rgba(34, 211, 238, 0.05)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="795" y="138" fill="#22d3ee" font-size="10" font-weight="600">CLUSTER: Audit (weight 1.0) — Profil: cabinet-audit</text>
+
+        <rect x="795" y="150" width="75" height="38" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.2"/>
+        <rect x="795" y="150" width="75" height="38" rx="6" fill="rgba(8, 51, 68, 0.3)"/>
+        <text x="832" y="168" fill="white" font-size="10" font-weight="600" text-anchor="middle">Alice</text>
+        <text x="832" y="182" fill="#94a3b8" font-size="7" text-anchor="middle">audit.jsonl</text>
+
+        <rect x="885" y="150" width="75" height="38" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.2"/>
+        <rect x="885" y="150" width="75" height="38" rx="6" fill="rgba(8, 51, 68, 0.3)"/>
+        <text x="922" y="168" fill="white" font-size="10" font-weight="600" text-anchor="middle">Bob</text>
+        <text x="922" y="182" fill="#94a3b8" font-size="7" text-anchor="middle">audit.jsonl</text>
+
+        <rect x="975" y="150" width="75" height="38" rx="6" fill="#0f172a" stroke="#22d3ee" stroke-width="1.2"/>
+        <rect x="975" y="150" width="75" height="38" rx="6" fill="rgba(8, 51, 68, 0.3)"/>
+        <text x="1012" y="168" fill="white" font-size="10" font-weight="600" text-anchor="middle">Charles</text>
+        <text x="1012" y="182" fill="#94a3b8" font-size="7" text-anchor="middle">audit.jsonl</text>
+
+        <!-- Merge local audit -->
+        <rect x="1070" y="148" width="95" height="42" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="1070" y="148" width="95" height="42" rx="6" fill="rgba(6, 78, 59, 0.3)"/>
+        <text x="1117" y="167" fill="white" font-size="9" font-weight="600" text-anchor="middle">Merge</text>
+        <text x="1117" y="182" fill="#94a3b8" font-size="7" text-anchor="middle">Local</text>
+
+        <line x1="1050" y1="169" x2="1068" y2="169" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)"/>
+
+        <!-- Export Engine -->
+        <rect x="1180" y="148" width="110" height="55" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+        <rect x="1180" y="148" width="110" height="55" rx="6" fill="rgba(251, 146, 60, 0.25)"/>
+        <text x="1235" y="170" fill="white" font-size="10" font-weight="600" text-anchor="middle">📤 Export</text>
+        <text x="1235" y="186" fill="#94a3b8" font-size="7" text-anchor="middle">Engine</text>
+        <text x="1235" y="198" fill="#fb923c" font-size="7" text-anchor="middle">scope=shared</text>
+
+        <line x1="1165" y1="175" x2="1178" y2="175" stroke="#fb923c" stroke-width="1.2" marker-end="url(#arrow-orange)"/>
+
+        <!-- Export file -->
+        <rect x="1310" y="150" width="120" height="50" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2"/>
+        <rect x="1310" y="150" width="120" height="50" rx="6" fill="rgba(251, 191, 36, 0.12)"/>
+        <text x="1370" y="170" fill="white" font-size="9" font-weight="600" text-anchor="middle">export/</text>
+        <text x="1370" y="185" fill="#fbbf24" font-size="8" text-anchor="middle">audit.jsonl</text>
+        <text x="1370" y="197" fill="#94a3b8" font-size="7" text-anchor="middle">→ Syncthing</text>
+
+        <line x1="1290" y1="175" x2="1308" y2="175" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+
+        <!-- Expertise -->
+        <text x="795" y="218" fill="#94a3b8" font-size="8">Expertise: audit · IFRS · ISA · fraude · circularisation · matérialité · provisions</text>
+        <text x="795" y="232" fill="#475569" font-size="7">Mémoire "fraude élevé" → ×6.0 (weight 1.0 × expertise 2.0 × monopole 3.0)</text>
+
+        <!-- Inbox audit -->
+        <rect x="795" y="245" width="140" height="28" rx="5" fill="#0f172a" stroke="#fb923c" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="795" y="245" width="140" height="28" rx="5" fill="rgba(251, 146, 60, 0.1)"/>
+        <text x="865" y="263" fill="#fb923c" font-size="8" font-weight="600" text-anchor="middle">📥 inbox/from-fiscal.jsonl</text>
+
+        <!-- === Cluster 2: FISCAL === -->
+        <rect x="782" y="340" width="660" height="170" rx="10" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="795" y="358" fill="#fbbf24" font-size="10" font-weight="600">CLUSTER: Fiscal (weight 1.5) — Profil: cabinet-fiscal</text>
+
+        <rect x="795" y="370" width="75" height="38" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2"/>
+        <rect x="795" y="370" width="75" height="38" rx="6" fill="rgba(120, 53, 15, 0.2)"/>
+        <text x="832" y="388" fill="white" font-size="10" font-weight="600" text-anchor="middle">David</text>
+        <text x="832" y="402" fill="#94a3b8" font-size="7" text-anchor="middle">fiscal.jsonl</text>
+
+        <rect x="885" y="370" width="75" height="38" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2"/>
+        <rect x="885" y="370" width="75" height="38" rx="6" fill="rgba(120, 53, 15, 0.2)"/>
+        <text x="922" y="388" fill="white" font-size="10" font-weight="600" text-anchor="middle">Eve</text>
+        <text x="922" y="402" fill="#94a3b8" font-size="7" text-anchor="middle">fiscal.jsonl</text>
+
+        <rect x="1070" y="368" width="95" height="42" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="1070" y="368" width="95" height="42" rx="6" fill="rgba(6, 78, 59, 0.3)"/>
+        <text x="1117" y="387" fill="white" font-size="9" font-weight="600" text-anchor="middle">Merge</text>
+        <text x="1117" y="402" fill="#94a3b8" font-size="7" text-anchor="middle">Local</text>
+
+        <line x1="960" y1="389" x2="1068" y2="389" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)"/>
+
+        <rect x="1180" y="368" width="110" height="42" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+        <rect x="1180" y="368" width="110" height="42" rx="6" fill="rgba(251, 146, 60, 0.25)"/>
+        <text x="1235" y="390" fill="white" font-size="10" font-weight="600" text-anchor="middle">📤 Export</text>
+        <text x="1235" y="404" fill="#fb923c" font-size="7" text-anchor="middle">Engine</text>
+
+        <line x1="1165" y1="389" x2="1178" y2="389" stroke="#fb923c" stroke-width="1.2" marker-end="url(#arrow-orange)"/>
+
+        <rect x="1310" y="370" width="120" height="40" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2"/>
+        <rect x="1310" y="370" width="120" height="40" rx="6" fill="rgba(251, 191, 36, 0.12)"/>
+        <text x="1370" y="390" fill="white" font-size="9" font-weight="600" text-anchor="middle">export/</text>
+        <text x="1370" y="405" fill="#fbbf24" font-size="8" text-anchor="middle">fiscal.jsonl</text>
+
+        <line x1="1290" y1="389" x2="1308" y2="389" stroke="#fbbf24" stroke-width="1.2"/>
+
+        <text x="795" y="425" fill="#94a3b8" font-size="8">Expertise: fiscalité · TVA · prix de transfert · imposition · CGI · taxe</text>
+        <text x="795" y="439" fill="#475569" font-size="7">Mémoire "TVA intracommunautaire" → ×9.0 (weight 1.5 × expertise 2.0 × monopole 3.0)</text>
+
+        <rect x="795" y="452" width="140" height="28" rx="5" fill="#0f172a" stroke="#fb923c" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="795" y="452" width="140" height="28" rx="5" fill="rgba(251, 146, 60, 0.1)"/>
+        <text x="865" y="470" fill="#fb923c" font-size="8" font-weight="600" text-anchor="middle">📥 inbox/from-audit.jsonl</text>
+
+        <!-- === Cluster 3: JURIDIQUE (compact) === -->
+        <rect x="782" y="522" width="660" height="100" rx="10" fill="rgba(167, 139, 250, 0.04)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,4"/>
+        <text x="795" y="540" fill="#a78bfa" font-size="10" font-weight="600">CLUSTER: Juridique (weight 2.0) — Profil: cabinet-juridique</text>
+
+        <rect x="795" y="552" width="75" height="38" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.2"/>
+        <rect x="795" y="552" width="75" height="38" rx="6" fill="rgba(76, 29, 149, 0.3)"/>
+        <text x="832" y="570" fill="white" font-size="10" font-weight="600" text-anchor="middle">Frank</text>
+        <text x="832" y="584" fill="#94a3b8" font-size="7" text-anchor="middle">juridique.jsonl</text>
+
+        <rect x="1070" y="550" width="95" height="42" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="1070" y="550" width="95" height="42" rx="6" fill="rgba(6, 78, 59, 0.3)"/>
+        <text x="1117" y="569" fill="white" font-size="9" font-weight="600" text-anchor="middle">Merge</text>
+        <text x="1117" y="584" fill="#94a3b8" font-size="7" text-anchor="middle">Local</text>
+
+        <line x1="870" y1="571" x2="1068" y2="571" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)"/>
+
+        <rect x="1180" y="550" width="110" height="42" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="1.5"/>
+        <rect x="1180" y="550" width="110" height="42" rx="6" fill="rgba(251, 146, 60, 0.25)"/>
+        <text x="1235" y="572" fill="white" font-size="10" font-weight="600" text-anchor="middle">📤 Export</text>
+        <text x="1235" y="586" fill="#fb923c" font-size="7" text-anchor="middle">Engine</text>
+
+        <line x1="1165" y1="571" x2="1178" y2="571" stroke="#fb923c" stroke-width="1.2"/>
+
+        <rect x="1310" y="552" width="120" height="40" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="1.2"/>
+        <rect x="1310" y="552" width="120" height="40" rx="6" fill="rgba(76, 29, 149, 0.3)"/>
+        <text x="1370" y="572" fill="white" font-size="9" font-weight="600" text-anchor="middle">export/</text>
+        <text x="1370" y="587" fill="#a78bfa" font-size="8" text-anchor="middle">juridique.jsonl</text>
+
+        <text x="795" y="610" fill="#94a3b8" font-size="8">Expertise: droit · contrat · contentieux · recours · sociétés · litige  |  "recours contentieux" → ×12.0 (max)</text>
+
+        <!-- Inbox inter-cluster arrows -->
+        <path d="M 935 470 L 935 478 L 935 495 Q 935 510 950 510 L 982 510" fill="none" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+        <text x="958" y="500" fill="#fb923c" font-size="7">inbox reply</text>
+
+        <!-- === GLOBAL HIVEMIND === -->
+        <rect x="782" y="640" width="660" height="155" rx="10" fill="rgba(34, 211, 238, 0.08)" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="795" y="660" fill="#22d3ee" font-size="11" font-weight="700">🌐 HIVEMIND GLOBAL — Profil: cabinet</text>
+
+        <!-- Global imports -->
+        <rect x="795" y="675" width="130" height="60" rx="6" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2"/>
+        <rect x="795" y="675" width="130" height="60" rx="6" fill="rgba(251, 191, 36, 0.12)"/>
+        <text x="860" y="695" fill="white" font-size="9" font-weight="600" text-anchor="middle">events/ (global)</text>
+        <text x="860" y="712" fill="#94a3b8" font-size="7" text-anchor="middle">audit.jsonl</text>
+        <text x="860" y="724" fill="#94a3b8" font-size="7" text-anchor="middle">fiscal.jsonl</text>
+        <text x="860" y="736" fill="#94a3b8" font-size="7" text-anchor="middle">juridique.jsonl</text>
+
+        <!-- Syncthing arrows: exports → global -->
+        <path d="M 1370 200 Q 1400 200 1400 400 Q 1400 680 930 680" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-amber)"/>
+        <text x="1410" y="450" fill="#fbbf24" font-size="7" transform="rotate(90 1410 450)">Syncthing P2P</text>
+
+        <!-- Weighted Merge -->
+        <rect x="950" y="675" width="140" height="70" rx="6" fill="#0f172a" stroke="#fb923c" stroke-width="2"/>
+        <rect x="950" y="675" width="140" height="70" rx="6" fill="rgba(251, 146, 60, 0.3)"/>
+        <text x="1020" y="695" fill="white" font-size="10" font-weight="700" text-anchor="middle">⚖️ Weighted</text>
+        <text x="1020" y="711" fill="white" font-size="10" font-weight="700" text-anchor="middle">Merge</text>
+        <text x="1020" y="728" fill="#94a3b8" font-size="7" text-anchor="middle">× expertise × monopole</text>
+        <text x="1020" y="740" fill="#fb923c" font-size="7" text-anchor="middle">cap à 1.0</text>
+
+        <line x1="925" y1="705" x2="948" y2="705" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrow-orange)"/>
+
+        <!-- Global consolidated.db -->
+        <rect x="1120" y="680" width="140" height="60" rx="6" fill="#0f172a" stroke="#a78bfa" stroke-width="2"/>
+        <rect x="1120" y="680" width="140" height="60" rx="6" fill="rgba(76, 29, 149, 0.4)"/>
+        <text x="1190" y="700" fill="white" font-size="10" font-weight="600" text-anchor="middle">🗄️ Global DB</text>
+        <text x="1190" y="718" fill="#94a3b8" font-size="7" text-anchor="middle">consolidated.db</text>
+        <text x="1190" y="732" fill="#a78bfa" font-size="7" text-anchor="middle">FTS5 · LOCAL</text>
+
+        <line x1="1090" y1="710" x2="1118" y2="710" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+        <!-- Redistribution -->
+        <rect x="1285" y="675" width="145" height="70" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="1285" y="675" width="145" height="70" rx="6" fill="rgba(6, 78, 59, 0.3)"/>
+        <text x="1357" y="695" fill="white" font-size="10" font-weight="600" text-anchor="middle">📡 Redistribute</text>
+        <text x="1357" y="712" fill="#94a3b8" font-size="7" text-anchor="middle">Global → Clusters</text>
+        <text x="1357" y="726" fill="#94a3b8" font-size="7" text-anchor="middle">downstream/</text>
+        <text x="1357" y="740" fill="#34d399" font-size="7" text-anchor="middle">Pertinence NLP</text>
+
+        <line x1="1260" y1="710" x2="1283" y2="710" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+
+        <!-- Redistribution arrows back to clusters -->
+        <path d="M 1357 672 C 1357 655, 1357 648, 1357 648" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="1370" y="660" fill="#34d399" font-size="7">scope=global → inbox/to-*.jsonl</text>
+
+        <!-- Weight example -->
+        <text x="795" y="760" fill="#94a3b8" font-size="8">Exemple pondération : "TVA intracommunautaire" (cluster=fiscal, importance=0.85) · fiscal×1.5 · expertise TVA×2 · monopole×3 = 0.85×9.0=7.65→1.0</text>
+
+        <!-- ================================================================
+             LEGEND
+             ================================================================ -->
+        <rect x="782" y="780" width="660" height="145" rx="8" fill="rgba(15, 23, 42, 0.7)" stroke="#1e293b" stroke-width="1"/>
+
+        <text x="795" y="800" fill="white" font-size="11" font-weight="700">Legend</text>
+
+        <rect x="795" y="815" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="818" y="823" fill="#94a3b8" font-size="8">Write / Agent</text>
+
+        <rect x="900" y="815" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="923" y="823" fill="#94a3b8" font-size="8">Merge / Process</text>
+
+        <rect x="1040" y="815" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="1063" y="823" fill="#94a3b8" font-size="8">Storage / Recall</text>
+
+        <rect x="1190" y="815" width="16" height="10" rx="2" fill="rgba(251, 191, 36, 0.18)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="1213" y="823" fill="#94a3b8" font-size="8">Transport / Export</text>
+
+        <rect x="795" y="835" width="16" height="10" rx="2" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="1"/>
+        <text x="818" y="843" fill="#94a3b8" font-size="8">Cross-Cluster / Weighted</text>
+
+        <rect x="900" y="835" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.3)" stroke="#fb7185" stroke-width="1"/>
+        <text x="923" y="843" fill="#94a3b8" font-size="8">Security / Hash Chain</text>
+
+        <line x1="1040" y1="840" x2="1056" y2="840" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="1063" y="843" fill="#94a3b8" font-size="8">Syncthing</text>
+
+        <line x1="1190" y1="840" x2="1206" y2="840" stroke="#fb923c" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="1213" y="843" fill="#94a3b8" font-size="8">Inbox / Cross-Cluster</text>
+
+        <line x1="795" y1="855" x2="811" y2="855" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,3"/>
+        <text x="818" y="858" fill="#94a3b8" font-size="8">Phase 1 Region</text>
+
+        <line x1="900" y1="855" x2="916" y2="855" stroke="#fb923c" stroke-width="1" stroke-dasharray="6,3"/>
+        <text x="923" y="858" fill="#94a3b8" font-size="8">Phase 2 Region</text>
+
+        <rect x="1040" y="850" width="16" height="10" rx="2" fill="transparent" stroke="#fb7185" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="1063" y="858" fill="#94a3b8" font-size="8">Security Layer</text>
+
+        <!-- ================================================================
+             FILE STRUCTURE (bottom)
+             ================================================================ -->
+        <rect x="782" y="940" width="660" height="135" rx="8" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+        <text x="795" y="960" fill="white" font-size="10" font-weight="700">📁 File Structure — ~/.hermes/profiles/</text>
+
+        <text x="795" y="982" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">cabinet/</text>
+        <text x="870" y="982" fill="#fbbf24" font-size="8">← Global (Git: skills, config, USER.md, clusters.yaml)</text>
+
+        <text x="795" y="998" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">├── memory/events/</text>
+        <text x="935" y="998" fill="#94a3b8" font-size="8">audit.jsonl · fiscal.jsonl · juridique.jsonl ← Syncthing</text>
+
+        <text x="795" y="1014" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">└── memory/consolidated.db</text>
+        <text x="980" y="1014" fill="#a78bfa" font-size="8">← LOCAL (FTS5, jamais sync)</text>
+
+        <text x="795" y="1035" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">cabinet-audit/</text>
+        <text x="930" y="1035" fill="#94a3b8" font-size="8">← Cluster: events/{alice,bob,charles}.jsonl · export/audit.jsonl · inbox/</text>
+
+        <text x="795" y="1052" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">cabinet-fiscal/</text>
+        <text x="935" y="1052" fill="#94a3b8" font-size="8">← Cluster: events/{david,eve}.jsonl · export/fiscal.jsonl · inbox/</text>
+
+        <text x="795" y="1068" fill="#22d3ee" font-size="8" font-family="'JetBrains Mono', monospace">cabinet-juridique/</text>
+        <text x="940" y="1068" fill="#94a3b8" font-size="8">← Cluster: events/{frank}.jsonl · export/juridique.jsonl · inbox/</text>
+
+      </svg>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Phase 1 — Core (5 modules)</h3>
+        </div>
+        <ul>
+          <li>• merge_engine.py — Parse JSONL + SQLite + FTS5</li>
+          <li>• hivemind_mnemosyne.py — Adaptateur CRUD + CLI</li>
+          <li>• event_writer.py — Écriture signée Ed25519</li>
+          <li>• watcher.py — Poll + merge automatique</li>
+          <li>• hivemind_cli.py — init / join / status / serve</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot orange"></div>
+          <h3>Phase 2 — Clustered (6 modules)</h3>
+        </div>
+        <ul>
+          <li>• clusters.yaml — Définition canonique clusters/membres</li>
+          <li>• hivemind_cluster_config.py — Parser + validator</li>
+          <li>• merge_engine_weighted.py — Pondération ×9.0 max</li>
+          <li>• export_engine.py — Cluster → JSONL global</li>
+          <li>• redistribute.py — Global → Clusters (downstream)</li>
+          <li>• inbox_writer.py — Messages inter-cluster</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>État actuel — 11 juin 2026</h3>
+        </div>
+        <ul>
+          <li>• 9/9 tests passent (Phases 1 + 2)</li>
+          <li>• 1664 mémoires Mnemosyne réelles</li>
+          <li>• 22 fichiers Python · ~4000 lignes</li>
+          <li>• Hash chain Ed25519 · FTS5 · Tombstone</li>
+          <li>• Prêt pour déploiement → Lot A</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">
+      HiveMind by rtsitola · Phase 1 + Phase 2 · hivemind — intelligence collective décentralisée pour cabinets d'audit
+    </p>
+  </div>
+</body>
+</html>

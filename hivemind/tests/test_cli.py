@@ -18,8 +18,9 @@ import tempfile
 import subprocess
 from pathlib import Path
 
-PROTOTYPE_DIR = os.path.dirname(os.path.abspath(__file__))
-CLI = os.path.join(PROTOTYPE_DIR, "hivemind_cli.py")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CLI = os.path.join(PACKAGE_DIR, "hivemind_cli.py")
 
 # Rediriger HERMES_HOME vers un dossier temporaire
 REAL_HERMES_HOME = os.path.expanduser("~/.hermes")
@@ -55,8 +56,7 @@ def test_cli():
 
     # Patch le HERMES_HOME dans le CLI en modifiant temporairement la constante
     # On va monkey-patch le module hivemind_cli
-    sys.path.insert(0, PROTOTYPE_DIR)
-    import hivemind_cli
+    from hivemind import hivemind_cli
     original_home = hivemind_cli.HERMES_HOME
     original_profiles = hivemind_cli.PROFILES_DIR
     hivemind_cli.HERMES_HOME = Path(TEST_HERMES_HOME)

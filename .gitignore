@@ -27,3 +27,4 @@ test_clusters/
 
 # Fichiers lock SQLite
 *.lock
+memory/events/*.jsonl

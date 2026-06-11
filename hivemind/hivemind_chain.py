@@ -19,7 +19,7 @@ CLÉS :
   - La clé publique est stockée dans le premier événement de la chaîne
 
 USAGE :
-  from hivemind_chain import ChainState, sign_event, verify_chain
+  from hivemind.hivemind_chain import ChainState, sign_event, verify_chain
 
   state = ChainState(agent="alice", events_dir="./memory/events")
   event = state.sign_event({"op": "remember", ...})
