@@ -2,10 +2,15 @@
 
 # Base de données consolidée (générée localement, jamais sync)
 *.db
-memory/consolidated.db
+*.db-wal
+*.db-shm
+*.db-journal
 
-# Prototype — supprimé, ne plus tracker
-prototype/
+# Fichiers lock
+*.lock
+
+# Données de test (memory/ est local, généré par les tests)
+memory/
 
 # Clés API — JAMAIS dans Git
 .env
@@ -24,7 +29,3 @@ Thumbs.db
 # Fichiers de test générés
 /tmp/
 test_clusters/
-
-# Fichiers lock SQLite
-*.lock
-memory/events/*.jsonl
